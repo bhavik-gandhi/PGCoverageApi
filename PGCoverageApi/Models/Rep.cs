@@ -20,6 +20,9 @@ namespace PGCoverageApi.Models
         [Column("rep_nm")]
         public string RepName { get; set; }
 
+        [Column("rep_rank_index")]
+        public decimal RepRankIndex { get; set; }
+
         [Column("active_ind")]
         public bool ActiveInd { get; set; }
 

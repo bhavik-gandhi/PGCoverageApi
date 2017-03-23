@@ -21,6 +21,9 @@ namespace PGCoverageApi.Models
         [Column("region_nm")]
         public string RegionName { get; set; }
 
+        [Column("region_rank_index")]
+        public decimal RegionRankIndex { get; set; }
+
         [Column("active_ind")]
         public bool ActiveInd { get; set; }
 

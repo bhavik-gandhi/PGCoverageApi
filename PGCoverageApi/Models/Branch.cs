@@ -22,6 +22,9 @@ namespace PGCoverageApi.Models
         [Column("branch_nm")]
         public string BranchName { get; set; }
 
+        [Column("branch_rank_index")]
+        public decimal BranchRankIndex { get; set; }
+
         [Column("active_ind")]
         public bool ActiveInd { get; set; }
 
