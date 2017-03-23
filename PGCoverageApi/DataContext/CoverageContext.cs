@@ -7,14 +7,17 @@ using System.Threading.Tasks;
 
 namespace PGCoverageApi.DataContext
 {
-    public class BranchContext : DbContext
+    public class CoverageContext : DbContext
     {
-        public BranchContext(DbContextOptions<ChannelContext> options) : base(options)
+        public CoverageContext(DbContextOptions<CoverageContext> options) : base(options)
         {
 
         }
 
+        public DbSet<Channel> ChannelItems { get; set; }
+        public DbSet<Region> RegionItems { get; set; }
         public DbSet<Branch> BranchItems { get; set; }
+        public DbSet<Rep> RepItems { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
