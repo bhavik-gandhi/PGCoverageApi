@@ -48,33 +48,33 @@ namespace PGCoverageApi.Controllers
             //Channel
             var startTimeChannel = DateTime.UtcNow;
 
-            foreach (Channel item in channels)
-                _channelRepository.Add(item);
-
+            //foreach (Channel item in channels)
+            //    _channelRepository.Add(item);
+            _channelRepository.AddBulk(channels);
             var endTimeChannel = DateTime.UtcNow;
 
             //Region
             var startTimeRegion = DateTime.UtcNow;
 
-            foreach (Region item in regions)
-                _regionRepository.Add(item);
-
+            //foreach (Region item in regions)
+            //    _regionRepository.Add(item);
+            _regionRepository.AddBulk(regions);
             var endTimeRegion = DateTime.UtcNow;
 
             //Branch
             var startTimeBranch= DateTime.UtcNow;
 
-            foreach (Branch item in branches)
-                _branchRepository.Add(item);
-
+            //foreach (Branch item in branches)
+            //    _branchRepository.Add(item);
+            _branchRepository.AddBulk(branches);
             var endTimeBranch = DateTime.UtcNow;
 
             //Rep
             var startTimeRep = DateTime.UtcNow;
 
-            foreach (Rep item in reps)
-                _repRepository.Add(item);
-
+            //foreach (Rep item in reps)
+            //  _repRepository.Add(item);
+            _repRepository.AddBulk(reps);
             var endTimeRep = DateTime.UtcNow;
 
 
