@@ -13,5 +13,7 @@ namespace PGCoverageApi.Repository
         Region Find(long key);
         void Remove(long key);
         void Update(Region item);
+
+        void AddBulk(ICollection<Region> items);
     }
 }

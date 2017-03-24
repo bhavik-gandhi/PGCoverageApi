@@ -44,6 +44,29 @@ namespace PGCoverageApi.Repository
             _context.BranchItems.Update(item);
             _context.SaveChanges();
         }
+
+        public void AddBulk(ICollection<Branch> items)
+        {
+
+
+            int i = 0;
+
+            foreach (Branch branch in items)
+            {
+
+                _context.BranchItems.Add(branch);
+
+                // this will add max 10 items together
+                if ((i % 100) == 0)
+                {
+                    _context.SaveChanges();
+                    // show some progress to user based on
+                    // value of i
+                }
+                i++;
+            }
+            _context.SaveChanges();
+        }
     }
 }
 

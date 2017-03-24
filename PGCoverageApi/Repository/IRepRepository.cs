@@ -13,5 +13,7 @@ namespace PGCoverageApi.Repository
         Rep Find(long key);
         void Remove(long key);
         void Update(Rep item);
+
+        void AddBulk(ICollection<Rep> items);
     }
 }

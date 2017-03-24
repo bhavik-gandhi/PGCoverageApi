@@ -13,5 +13,7 @@ namespace PGCoverageApi.Repository
         Branch Find(long key);
         void Remove(long key);
         void Update(Branch item);
+
+        void AddBulk(ICollection<Branch> items);
     }
 }

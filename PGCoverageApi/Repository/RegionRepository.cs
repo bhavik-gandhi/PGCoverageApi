@@ -44,6 +44,29 @@ namespace PGCoverageApi.Repository
             _context.RegionItems.Update(item);
             _context.SaveChanges();
         }
+
+        public void AddBulk(ICollection<Region> items)
+        {
+
+
+            int i = 0;
+
+            foreach (Region region in items)
+            {
+
+                _context.RegionItems.Add(region);
+
+                // this will add max 10 items together
+                if ((i % 100) == 0)
+                {
+                    _context.SaveChanges();
+                    // show some progress to user based on
+                    // value of i
+                }
+                i++;
+            }
+            _context.SaveChanges();
+        }
     }
 }
 
