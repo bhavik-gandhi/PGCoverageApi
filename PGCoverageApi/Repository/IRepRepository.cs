@@ -8,10 +8,10 @@ namespace PGCoverageApi.Repository
 {
     public interface IRepRepository
     {
-        void Add(Channel item);
-        IEnumerable<Channel> GetAll();
-        Channel Find(long key);
+        void Add(Rep item);
+        IEnumerable<Rep> GetAll();
+        Rep Find(long key);
         void Remove(long key);
-        void Update(Channel item);
+        void Update(Rep item);
     }
 }

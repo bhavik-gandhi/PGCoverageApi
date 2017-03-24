@@ -8,10 +8,10 @@ namespace PGCoverageApi.Repository
 {
     public interface IBranchRepository
     {
-        void Add(Channel item);
-        IEnumerable<Channel> GetAll();
-        Channel Find(long key);
+        void Add(Branch item);
+        IEnumerable<Branch> GetAll();
+        Branch Find(long key);
         void Remove(long key);
-        void Update(Channel item);
+        void Update(Branch item);
     }
 }

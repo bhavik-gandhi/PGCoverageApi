@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PGCoverageApi.DataContext;
 using Microsoft.EntityFrameworkCore;
+using PGCoverageApi.Repository;
 
 namespace PGCoverageApi
 {
@@ -33,6 +34,11 @@ namespace PGCoverageApi
             services.AddMvc();
 
             services.AddDbContext<CoverageContext>(opt => opt.UseNpgsql(Configuration.GetConnectionString("CoverageContext")));
+            services.AddSingleton<IChannelRepository, ChannelRepository>();
+            services.AddSingleton<IRegionRepository, RegionRepository>();
+            services.AddSingleton<IBranchRepository, BranchRepository>();
+            services.AddSingleton<IRepRepository, RepRepository>();
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -40,6 +46,7 @@ namespace PGCoverageApi
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
+            //loggerFactory.AddFile("Logs/myapp-{Date}.txt");
 
             app.UseMvc();
         }

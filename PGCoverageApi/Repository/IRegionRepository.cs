@@ -8,10 +8,10 @@ namespace PGCoverageApi.Repository
 {
     public interface IRegionRepository
     {
-        void Add(Channel item);
-        IEnumerable<Channel> GetAll();
-        Channel Find(long key);
+        void Add(Region item);
+        IEnumerable<Region> GetAll();
+        Region Find(long key);
         void Remove(long key);
-        void Update(Channel item);
+        void Update(Region item);
     }
 }
