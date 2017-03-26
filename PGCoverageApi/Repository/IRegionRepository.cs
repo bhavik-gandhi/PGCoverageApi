@@ -14,6 +14,6 @@ namespace PGCoverageApi.Repository
         void Remove(long key);
         void Update(Region item);
 
-        void AddBulk(ICollection<Region> items);
+        void AddBulk(string connectionString, ICollection<Region> items);
     }
 }

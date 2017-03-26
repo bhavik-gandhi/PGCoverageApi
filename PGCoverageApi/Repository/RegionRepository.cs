@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using PGCoverageApi.DataContext;
 using PGCoverageApi.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace PGCoverageApi.Repository
 {
@@ -14,6 +15,7 @@ namespace PGCoverageApi.Repository
         public RegionRepository(CoverageContext context)
         {
             _context = context;
+            _context.ChangeTracker.AutoDetectChangesEnabled = false;
         }
 
         public IEnumerable<Region> GetAll()
@@ -45,27 +47,34 @@ namespace PGCoverageApi.Repository
             _context.SaveChanges();
         }
 
-        public void AddBulk(ICollection<Region> items)
+        public void AddBulk(string connectionString, ICollection<Region> items)
         {
 
 
             int i = 0;
-
-            foreach (Region region in items)
-            {
-
-                _context.RegionItems.Add(region);
-
-                // this will add max 10 items together
-                if ((i % 100) == 0)
-                {
-                    _context.SaveChanges();
-                    // show some progress to user based on
-                    // value of i
-                }
-                i++;
-            }
+            
+            _context.RegionItems.AddRange(items);
             _context.SaveChanges();
+            //using (CoverageContext contextC = new CoverageContext(_dbContextOption))
+            //{
+
+            //    foreach (Region region in items)
+            //    {
+
+            //        _context.RegionItems.Add(region);
+
+            //        // this will add max 10 items together
+            //        if ((i % 10000) == 0)
+            //        {
+            //            _context.SaveChanges();
+            //            // show some progress to user based on
+            //            // value of i
+            //        }
+            //        i++;
+            //    }
+            //    _context.SaveChanges();
+            //}
+
         }
     }
 }

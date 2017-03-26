@@ -32,8 +32,7 @@ namespace PGCoverageApi
         {
             // Add framework services.
             services.AddMvc();
-
-            services.AddDbContext<CoverageContext>(opt => opt.UseNpgsql(Configuration.GetConnectionString("CoverageContext")));
+            services.AddDbContext<CoverageContext>(opt => { opt.UseNpgsql(Configuration.GetConnectionString("CoverageContext")); },ServiceLifetime.Singleton);
             services.AddSingleton<IChannelRepository, ChannelRepository>();
             services.AddSingleton<IRegionRepository, RegionRepository>();
             services.AddSingleton<IBranchRepository, BranchRepository>();
@@ -46,7 +45,7 @@ namespace PGCoverageApi
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
-            //loggerFactory.AddFile("Logs/myapp-{Date}.txt");
+            loggerFactory.AddFile("Logs/myapp-{Date}.txt");
 
             app.UseMvc();
         }

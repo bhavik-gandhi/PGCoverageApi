@@ -33,7 +33,7 @@ namespace PGCoverageApi.Utilities
 
         public static ICollection<Region> FetchRegions(int regionCount = 15)
         {
-            
+
             if (_regions == null || !_regions.Any())
             {
                 BuildRegions(regionCount);
@@ -66,7 +66,7 @@ namespace PGCoverageApi.Utilities
         }
 
 
-        public static void BuildCoverage(int channel = 5, int region = 15, int branch = 250, int rep = 100)
+        public static void BuildCoverage(int channel = 5, int region = 15, int branch = 200, int rep = 75)
         {
             BuildChannels(channel);
             BuildRegions(region);

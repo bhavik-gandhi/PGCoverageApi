@@ -9,6 +9,7 @@ using PGCoverageApi.Repository;
 using PGCoverageApi.Utilities;
 using Serilog;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 
 namespace PGCoverageApi.Controllers
 {
@@ -35,7 +36,9 @@ namespace PGCoverageApi.Controllers
         [HttpPatch]
         public IActionResult CreateBulk(int channelCount = 1, int regionCount = 2, int branchCount = 3, int repCount = 4)
         {
+            //string connectionString = "User ID = bg; Password = ipreo1359; Host = bgpostgresmaster.cachftxgju6f.us - east - 1.rds.amazonaws.com; Port = 5432; Database = Orders; Pooling = true; ";
 
+            string connectionString = "Server=bgpostgresmaster.cachftxgju6f.us-east-1.rds.amazonaws.com;User Id=bg;Password=ipreo1359;Database=Orders;Port=5432;Pooling=true;";
             var channels = CoverageDataSetup.FetchChannels(channelCount);
             var regions = CoverageDataSetup.FetchRegions(regionCount);
             var branches = CoverageDataSetup.FetchBranches(branchCount);
@@ -50,7 +53,7 @@ namespace PGCoverageApi.Controllers
 
             //foreach (Channel item in channels)
             //    _channelRepository.Add(item);
-            _channelRepository.AddBulk(channels);
+            _channelRepository.AddBulk(connectionString, channels);
             var endTimeChannel = DateTime.UtcNow;
 
             //Region
@@ -58,7 +61,7 @@ namespace PGCoverageApi.Controllers
 
             //foreach (Region item in regions)
             //    _regionRepository.Add(item);
-            _regionRepository.AddBulk(regions);
+            _regionRepository.AddBulk(connectionString, regions);
             var endTimeRegion = DateTime.UtcNow;
 
             //Branch
@@ -66,7 +69,7 @@ namespace PGCoverageApi.Controllers
 
             //foreach (Branch item in branches)
             //    _branchRepository.Add(item);
-            _branchRepository.AddBulk(branches);
+            _branchRepository.AddBulk(connectionString, branches);
             var endTimeBranch = DateTime.UtcNow;
 
             //Rep
@@ -74,7 +77,7 @@ namespace PGCoverageApi.Controllers
 
             //foreach (Rep item in reps)
             //  _repRepository.Add(item);
-            _repRepository.AddBulk(reps);
+            _repRepository.AddBulk(connectionString, reps);
             var endTimeRep = DateTime.UtcNow;
 
 
@@ -87,21 +90,23 @@ namespace PGCoverageApi.Controllers
             TimeSpan durationRep = endTimeRep - startTimeRep;
             TimeSpan durationTotalTime = endTime - startTime;
 
-            var msgChannel = string.Format("Channel created: {0}, Time taken(secs): {1}, Start Time (utc): {2}, End Time(utc): {3}",
-                                    channels.Count, durationChannel.TotalSeconds.ToString(), startTimeChannel.ToString(), endTimeChannel.ToString());
+            var msgChannel = string.Format("Channel created: {0}, Time taken(secs): {1}, Start Time (utc): {2}, End Time(utc): {3}, Record Count per sec:{4}",
+                                    channels.Count, durationChannel.TotalSeconds.ToString(), startTimeChannel.ToString(), endTimeChannel.ToString(), (channels.Count / durationChannel.TotalSeconds).ToString());
 
-            var msgRegion = string.Format("Region created: {0}, Time taken(secs): {1}, Start Time (utc): {2}, End Time(utc): {3}",
-                                    regions.Count, durationRegion.TotalSeconds.ToString(), startTimeRegion.ToString(), endTimeRegion.ToString());
-
-
-            var msgBranch = string.Format("Branch created: {0}, Time taken(secs): {1}, Start Time (utc): {2}, End Time(utc): {3}",
-                                    branches.Count, durationBranch.TotalSeconds.ToString(), startTimeBranch.ToString(), endTimeBranch.ToString());
+            var msgRegion = string.Format("Region created: {0}, Time taken(secs): {1}, Start Time (utc): {2}, End Time(utc): {3}, Record Count per sec:{4}",
+                                    regions.Count, durationRegion.TotalSeconds.ToString(), startTimeRegion.ToString(), endTimeRegion.ToString(), (regions.Count / durationRegion.TotalSeconds).ToString());
 
 
-            var msgRep = string.Format("Rep created: {0}, Time taken(secs): {1}, Start Time (utc): {2}, End Time(utc): {3}",
-                                    reps.Count, durationRep.TotalSeconds.ToString(), startTimeRep.ToString(), endTimeRep.ToString());
+            var msgBranch = string.Format("Branch created: {0}, Time taken(secs): {1}, Start Time (utc): {2}, End Time(utc): {3}, Record Count per sec:{4}",
+                                    branches.Count, durationBranch.TotalSeconds.ToString(), startTimeBranch.ToString(), endTimeBranch.ToString(), (branches.Count / durationBranch.TotalSeconds).ToString());
 
-            var msgTotalTime = string.Format("Total time taken(secs): {0}", durationTotalTime);
+
+            var msgRep = string.Format("Rep created: {0}, Time taken(secs): {1}, Start Time (utc): {2}, End Time(utc): {3}, Record Count per sec:{4}",
+                                    reps.Count, durationRep.TotalSeconds.ToString(), startTimeRep.ToString(), endTimeRep.ToString(), (reps.Count/ durationRep.TotalSeconds).ToString());
+
+            long totalCount = channels.Count + regions.Count + branches.Count + reps.Count;
+
+            var msgTotalTime = string.Format("Total time taken(secs): {0}, total record count: {1}, Record Count per sec:{2}", durationTotalTime.TotalSeconds.ToString(), totalCount.ToString(), (totalCount/ durationTotalTime.TotalSeconds).ToString());
 
 
             var msg = msgTotalTime + Environment.NewLine + msgChannel + Environment.NewLine + msgRegion + Environment.NewLine + msgBranch + Environment.NewLine + msgRep + Environment.NewLine;

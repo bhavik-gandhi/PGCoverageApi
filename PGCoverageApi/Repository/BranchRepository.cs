@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using PGCoverageApi.DataContext;
 using PGCoverageApi.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace PGCoverageApi.Repository
 {
@@ -14,6 +15,7 @@ namespace PGCoverageApi.Repository
         public BranchRepository(CoverageContext context)
         {
             _context = context;
+            _context.ChangeTracker.AutoDetectChangesEnabled = false;
         }
 
         public IEnumerable<Branch> GetAll()
@@ -45,28 +47,30 @@ namespace PGCoverageApi.Repository
             _context.SaveChanges();
         }
 
-        public void AddBulk(ICollection<Branch> items)
+        public void AddBulk(string connectionString, ICollection<Branch> items)
         {
 
 
             int i = 0;
+                _context.BranchItems.AddRange(items);
+            
+            //foreach (Branch branch in items)
+            //{
 
-            foreach (Branch branch in items)
-            {
+            //    _context.BranchItems.Add(branch);
 
-                _context.BranchItems.Add(branch);
-
-                // this will add max 10 items together
-                if ((i % 100) == 0)
-                {
-                    _context.SaveChanges();
-                    // show some progress to user based on
-                    // value of i
-                }
-                i++;
-            }
+            //    // this will add max 10 items together
+            //    if ((i % 10000) == 0)
+            //    {
+            //        _context.SaveChanges();
+            //        // show some progress to user based on
+            //        // value of i
+            //    }
+            //    i++;
+            //}
             _context.SaveChanges();
-        }
+            }
+        
     }
 }
 

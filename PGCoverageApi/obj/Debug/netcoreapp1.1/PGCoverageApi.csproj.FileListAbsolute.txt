@@ -1,0 +1,8 @@
+C:\Samples\Source\Repos\PGCoverageApi\PGCoverageApi\bin\Debug\netcoreapp1.1\PGCoverageApi.deps.json
+C:\Samples\Source\Repos\PGCoverageApi\PGCoverageApi\bin\Debug\netcoreapp1.1\PGCoverageApi.runtimeconfig.json
+C:\Samples\Source\Repos\PGCoverageApi\PGCoverageApi\bin\Debug\netcoreapp1.1\PGCoverageApi.runtimeconfig.dev.json
+C:\Samples\Source\Repos\PGCoverageApi\PGCoverageApi\bin\Debug\netcoreapp1.1\PGCoverageApi.dll
+C:\Samples\Source\Repos\PGCoverageApi\PGCoverageApi\bin\Debug\netcoreapp1.1\PGCoverageApi.pdb
+C:\Samples\Source\Repos\PGCoverageApi\PGCoverageApi\obj\Debug\netcoreapp1.1\PGCoverageApi.AssemblyInfo.cs
+C:\Samples\Source\Repos\PGCoverageApi\PGCoverageApi\obj\Debug\netcoreapp1.1\PGCoverageApi.dll
+C:\Samples\Source\Repos\PGCoverageApi\PGCoverageApi\obj\Debug\netcoreapp1.1\PGCoverageApi.pdb
