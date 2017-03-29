@@ -1,15 +1,10 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using PGCoverageApi.Models;
 using PGCoverageApi.Repository;
 using PGCoverageApi.Utilities;
 using Serilog;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Configuration;
+using PGCoverageApi.Models;
+using System.Linq;
 
 namespace PGCoverageApi.Controllers
 {
@@ -20,68 +15,56 @@ namespace PGCoverageApi.Controllers
         private readonly IRegionRepository _regionRepository;
         private readonly IBranchRepository _branchRepository;
         private readonly IRepRepository _repRepository;
-        private readonly ILogger<CoverageController> _log;
+        private ILogger _log;
 
-        public CoverageController(ILogger<CoverageController> log, IChannelRepository channelRepository, IRegionRepository regionRepository, IBranchRepository branchRepository, IRepRepository repRepository)
+        public CoverageController(ILogger log, IChannelRepository channelRepository, IRegionRepository regionRepository, IBranchRepository branchRepository, IRepRepository repRepository)
         {
-
             _log = log;
             _channelRepository = channelRepository;
             _regionRepository = regionRepository;
             _branchRepository = branchRepository;
             _repRepository = repRepository;
-            
         }
 
         [HttpPatch]
-        public IActionResult CreateBulk(int channelCount = 1, int regionCount = 2, int branchCount = 3, int repCount = 4)
+        public IActionResult CreateBulk(int channelCount = 1, int regionCount = 2, int branchCount = 3, int repCount = 4, bool storeDataAsJson = false, bool dataInSingleTable = false)
         {
-            //string connectionString = "User ID = bg; Password = ipreo1359; Host = bgpostgresmaster.cachftxgju6f.us - east - 1.rds.amazonaws.com; Port = 5432; Database = Orders; Pooling = true; ";
-
             string connectionString = "Server=bgpostgresmaster.cachftxgju6f.us-east-1.rds.amazonaws.com;User Id=bg;Password=ipreo1359;Database=Orders;Port=5432;Pooling=true;";
-            var channels = CoverageDataSetup.FetchChannels(channelCount);
-            var regions = CoverageDataSetup.FetchRegions(regionCount);
-            var branches = CoverageDataSetup.FetchBranches(branchCount);
-            var reps = CoverageDataSetup.FetchReps(repCount);
+            var channels = CoverageDataSetup.FetchChannels(channelCount, 1);
+            _log.Information("channel_maxid is:" + channels.Max<Channel>(i => i.ChannelId));
+            var regions = CoverageDataSetup.FetchRegions(regionCount, channels.Max<Channel>(i => i.ChannelId));
 
-            //_log.LogInformation("RepCount - {0}", repCount.ToString());
+            _log.Information("region_maxid is:" + regions.Max<Region>(i => i.RegionId));
 
+            var branches = CoverageDataSetup.FetchBranches(branchCount, regions.Max<Region>(i => i.RegionId));
+
+            _log.Information("branch_maxid is:" + branches.Max<Branch>(i => i.BranchId));
+            var reps = CoverageDataSetup.FetchReps(repCount, branches.Max<Branch>(i => i.BranchId));
+
+            
             var startTime = DateTime.UtcNow;
 
             //Channel
             var startTimeChannel = DateTime.UtcNow;
-
-            //foreach (Channel item in channels)
-            //    _channelRepository.Add(item);
-            _channelRepository.AddBulk(connectionString, channels);
+            _channelRepository.AddBulk(connectionString, channels, storeDataAsJson, dataInSingleTable);
+            
             var endTimeChannel = DateTime.UtcNow;
 
             //Region
             var startTimeRegion = DateTime.UtcNow;
-
-            //foreach (Region item in regions)
-            //    _regionRepository.Add(item);
-            _regionRepository.AddBulk(connectionString, regions);
+            _regionRepository.AddBulk(connectionString, regions, storeDataAsJson, dataInSingleTable);
             var endTimeRegion = DateTime.UtcNow;
-
+            
             //Branch
             var startTimeBranch= DateTime.UtcNow;
-
-            //foreach (Branch item in branches)
-            //    _branchRepository.Add(item);
-            _branchRepository.AddBulk(connectionString, branches);
+            _branchRepository.AddBulk(connectionString, branches, storeDataAsJson, dataInSingleTable);
             var endTimeBranch = DateTime.UtcNow;
-
+            
             //Rep
             var startTimeRep = DateTime.UtcNow;
-
-            //foreach (Rep item in reps)
-            //  _repRepository.Add(item);
-            _repRepository.AddBulk(connectionString, reps);
+            _repRepository.AddBulk(connectionString, reps, storeDataAsJson, dataInSingleTable);
             var endTimeRep = DateTime.UtcNow;
-
-
-
+            
             var endTime = DateTime.UtcNow;
 
             TimeSpan durationChannel = endTimeChannel - startTimeChannel;
@@ -111,7 +94,9 @@ namespace PGCoverageApi.Controllers
 
             var msg = msgTotalTime + Environment.NewLine + msgChannel + Environment.NewLine + msgRegion + Environment.NewLine + msgBranch + Environment.NewLine + msgRep + Environment.NewLine;
             var msg1 = channelCount.ToString();
+
             return Content(msg);
+
         }
-    }
+     }
 }

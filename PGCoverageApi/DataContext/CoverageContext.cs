@@ -19,6 +19,7 @@ namespace PGCoverageApi.DataContext
         public DbSet<Branch> BranchItems { get; set; }
         public DbSet<Rep> RepItems { get; set; }
 
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             builder.HasDefaultSchema("Coverage");

@@ -1,22 +1,22 @@
-﻿using System;
-using System.Text;
+﻿using System.Text;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using PGCoverageApi.DataContext;
 using PGCoverageApi.Models;
-using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using Serilog;
 
 namespace PGCoverageApi.Repository
 {
     public class RepRepository : IRepRepository
     {
         private readonly CoverageContext _context;
+        ILogger logger;
 
-        public RepRepository(CoverageContext context)
+        public RepRepository(CoverageContext context, ILogger _logger)
         {
             _context = context;
+            this.logger = _logger;
             _context.ChangeTracker.AutoDetectChangesEnabled = false;
         }
 
@@ -49,51 +49,44 @@ namespace PGCoverageApi.Repository
             _context.SaveChanges();
         }
 
-        public void AddBulk(string connectionString, ICollection<Rep> items)
+        public void AddBulk(string connectionString, ICollection<Rep> items, bool storeDataAsJson = false, bool dataInSingleTable = false)
         {
-
-
-            int i = 0;
-            _context.ChangeTracker.AutoDetectChangesEnabled = false;
-
             int blockSize = 10000;
             var group = items.Select((x, index) => new { x, index })
                                .GroupBy(x => x.index / blockSize, y => y.x);
 
-            //foreach (var block in group)
-            //{
-            //    _context.RepItems.AddRange(block);
-            //    _context.SaveChanges();
-            //}
+            IList<string> insertStatements = new List<string>();
 
-            foreach (var block in group)
+            if (!storeDataAsJson)
             {
-                NpgsqlConnection conn = new NpgsqlConnection(connectionString);
-                conn.Open();
-
-                // Define a query
-                NpgsqlCommand cmd = new NpgsqlCommand(FetchInsertStatement(block), conn);
-
-                // Execute a query
-                cmd.ExecuteNonQuery();
-
-                conn.Close();
+                foreach (var block in group)
+                {
+                    insertStatements.Add(FetchInsertStatement(block));
+                }
+            }
+            else
+            {
+                foreach (var block in group)
+                {
+                    insertStatements.Add(FetchInsertStatementAsJson(block, dataInSingleTable));
+                }
             }
 
-            //foreach (Rep rep in items)
-            //{
+            foreach (string s in insertStatements)
+            {
+                //logger.Information("inserting regions: {0}", s);
 
-            //    _context.RepItems.AddRange(items);
-            //    if ((i % 10000) == 0)
-            //    {
-            //        _context.SaveChanges();
-            //        // show some progress to user based on
-            //        // value of i
-            //    }
-            //    i++;
-            //}
+                using (NpgsqlConnection conn = new NpgsqlConnection(connectionString))
+                {
+                    conn.Open();
 
-            //_context.SaveChanges();
+                    NpgsqlCommand cmd = new NpgsqlCommand(s, conn);
+                    cmd.ExecuteNonQuery();
+
+                    conn.Close();
+                }
+
+            }
         }
 
         private string FetchInsertStatement(IEnumerable<Rep> items)
@@ -126,6 +119,64 @@ namespace PGCoverageApi.Repository
             }
 
             return fix.ToString().TrimEnd(',') + ";";
+        }
+
+        private string FetchInsertStatementAsJson(IEnumerable<Rep> items, bool dataInSingleTable)
+        {
+            StringBuilder fix = new StringBuilder();
+            if (!dataInSingleTable)
+            {
+                fix.Append(@"INSERT INTO ""Coverage"".tbl_rep(rep_id, rep_data) VALUES");
+            }
+            else
+            {
+                fix.Append(@"INSERT INTO ""Coverage"".tbl_coverage(coverage_id, coverage_data) VALUES");
+            }
+
+            foreach (Rep i in items)
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.Append("(");
+                sb.Append(i.RepId.ToString());
+                sb.Append(",'{\"active_ind\":");
+                sb.Append(i.ActiveInd.ToString().ToLower());
+                sb.Append(",");
+                sb.Append("\"rep_cd\":");
+                sb.Append("\"");
+                sb.Append(i.RepCode);
+                sb.Append("\"");
+                sb.Append(",");
+                sb.Append("\"rep_nm\":");
+                sb.Append("\"");
+                sb.Append(i.RepName);
+                sb.Append("\"");
+                sb.Append(",");
+                sb.Append("\"rep_rank_index\":");
+                sb.Append(i.RepRankIndex.ToString());
+                sb.Append(",");
+                sb.Append("\"cid\":");
+                sb.Append(i.ClientId.ToString());
+                sb.Append(",");
+                sb.Append("\"last_modified_user\":");
+                sb.Append(i.LastModifiedUserId.ToString());
+                sb.Append(",");
+                sb.Append("\"last_modified_utc_dttm\":");
+                sb.Append("\"");
+                sb.Append(i.LastModifiedUtcDateTime.ToString());
+                sb.Append("\"");
+                sb.Append(",");
+                sb.Append("\"parents\":");
+                sb.Append("{");
+                sb.Append("\"parent_id\":");
+                sb.Append(i.Branch.BranchId);
+                sb.Append("}");
+                sb.Append("}'");
+                sb.Append("),");
+                fix.Append(sb.ToString());
+            }
+
+            return fix.ToString().TrimEnd(',') + ";";
+
         }
     }
 }

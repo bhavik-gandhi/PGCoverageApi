@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.IO;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -10,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using PGCoverageApi.DataContext;
 using Microsoft.EntityFrameworkCore;
 using PGCoverageApi.Repository;
+using Serilog;
 
 namespace PGCoverageApi
 {
@@ -22,8 +24,11 @@ namespace PGCoverageApi
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
+            CurrentEnvironment = env;
             Configuration = builder.Build();
         }
+
+        private IHostingEnvironment CurrentEnvironment { get; set; }
 
         public IConfigurationRoot Configuration { get; }
 
@@ -33,6 +38,11 @@ namespace PGCoverageApi
             // Add framework services.
             services.AddMvc();
             services.AddDbContext<CoverageContext>(opt => { opt.UseNpgsql(Configuration.GetConnectionString("CoverageContext")); },ServiceLifetime.Singleton);
+            services.AddSingleton<Serilog.ILogger>(x => new LoggerConfiguration()
+                                                        .MinimumLevel.Debug()
+                                                        .WriteTo.RollingFile(Path.Combine(CurrentEnvironment.ContentRootPath, "Logs/myapp-{Date}.txt"))
+                                                        .CreateLogger());
+            services.AddSingleton<IChannelRepository, ChannelRepository>();
             services.AddSingleton<IChannelRepository, ChannelRepository>();
             services.AddSingleton<IRegionRepository, RegionRepository>();
             services.AddSingleton<IBranchRepository, BranchRepository>();
@@ -43,9 +53,7 @@ namespace PGCoverageApi
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-            loggerFactory.AddDebug();
-            loggerFactory.AddFile("Logs/myapp-{Date}.txt");
+            loggerFactory.AddSerilog();
 
             app.UseMvc();
         }

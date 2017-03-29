@@ -19,39 +19,41 @@ namespace PGCoverageApi.Utilities
         private static ICollection<Region> _regions;
         private static ICollection<Branch> _branches;
         private static ICollection<Rep> _reps;
-      
 
-        public static ICollection<Channel> FetchChannels(int channelCount = 5)
+
+
+        public static ICollection<Channel> FetchChannels(long channelCount = 5, long startId = 1)
         {
             if (_channels == null || !_channels.Any())
             {
-                BuildChannels(channelCount);
+                BuildChannels(channelCount, startId);
             }
 
             return _channels;
         }
 
-        public static ICollection<Region> FetchRegions(int regionCount = 15)
+
+        public static ICollection<Region> FetchRegions(long regionCount = 15, long startId = 1)
         {
 
             if (_regions == null || !_regions.Any())
             {
-                BuildRegions(regionCount);
+                BuildRegions(regionCount, startId);
             }
             return _regions;
             
         }
 
-        public static ICollection<Branch> FetchBranches(int branchCount = 250)
+        public static ICollection<Branch> FetchBranches(long branchCount = 250, long startId = 1)
         {
             if (_branches == null || !_branches.Any())
             {
-                BuildBranches(branchCount);
+                BuildBranches(branchCount, startId);
             }
             return _branches;
         }
 
-        public static ICollection<Rep> FetchReps(int repCount = 100)
+        public static ICollection<Rep> FetchReps(long repCount = 100, long startId = 1)
         {
             //var _log = new LoggerConfiguration().WriteTo.File(@"C:\Temp\abc1.log").CreateLogger();
 
@@ -60,13 +62,12 @@ namespace PGCoverageApi.Utilities
             if (_reps == null || !_reps.Any())
             {
                 //_log.Information("rep is null");
-                BuildReps(repCount);
+                BuildReps(repCount, startId);
             }
             return _reps;
         }
 
-
-        public static void BuildCoverage(int channel = 5, int region = 15, int branch = 200, int rep = 75)
+        public static void BuildCoverage(long channel = 5, long region = 15, long branch = 200, long rep = 75)
         {
             BuildChannels(channel);
             BuildRegions(region);
@@ -75,16 +76,17 @@ namespace PGCoverageApi.Utilities
 
         }
 
-        private static void BuildChannels(int channelCnt = 10)
+
+        private static void BuildChannels(long channelCnt = 10, long startId = 1)
         {
             _channels = new List<Channel>();
 
-            for (int cnt = 1 ; cnt <= channelCnt; cnt++ )
+            for (int cnt = 0 ; cnt < channelCnt; cnt++ )
             {
                 var channel = new Channel()
                 {
                     ClientId = _clientId,
-                    ChannelId = cnt,
+                    ChannelId = startId + cnt,
                     ChannelCode = _channelCode + RandomString(5),
                     ChannelName = RandomString(20),
                     ActiveInd = true,
@@ -97,10 +99,10 @@ namespace PGCoverageApi.Utilities
             }
         }
 
-        private static void BuildRegions(int regionCnt = 100)
+        private static void BuildRegions(long regionCnt = 100, long startId = 1)
         {
             _regions = new List<Region>();
-            int regionId = 0;
+            var regionId = startId;
 
             foreach(var channel in _channels)
             {
@@ -125,10 +127,10 @@ namespace PGCoverageApi.Utilities
 
         }
 
-        private static void BuildBranches(int branchCnt = 1000)
+        private static void BuildBranches(long branchCnt = 1000, long startId = 1)
         {
             _branches = new List<Branch>();
-            var branchId = 0;
+            var branchId = startId;
 
             foreach (var region in _regions)
             {
@@ -152,20 +154,14 @@ namespace PGCoverageApi.Utilities
             }
         }
 
-        private static void BuildReps(int repCnt = 10000)
+        private static void BuildReps(long repCnt = 10000, long startId = 1)
         {
-            var _log = new LoggerConfiguration().WriteTo.File(@"C:\Temp\abc.log").CreateLogger();
-
-            //loggerFactory.AddFile("Logs/myapp-{Date}.txt");
-
             _reps = new List<Rep>();
-            var repId = 0;
+            var repId = startId;
             
 
             foreach (var branch in _branches)
             {
-                //_log.Information("Branch - {0}", branch.BranchId.ToString());
-
                 for (int cnt = 1; cnt <= repCnt; cnt++)
                 {
                     var rep = new Rep()
