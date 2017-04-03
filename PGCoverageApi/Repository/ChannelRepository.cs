@@ -49,10 +49,9 @@ namespace PGCoverageApi.Repository
             _context.SaveChanges();
         }
 
-        public void AddBulk(string connectionString, ICollection<Channel> items, bool storeDataAsJson = false, bool dataInSingleTable = false)
+        public void AddBulk(string connectionString, ICollection<Channel> items, bool storeDataAsJson = false, bool dataInSingleTable = false, int blockSize = 10000)
         {
 
-            int blockSize = 10000;
             var group = items.Select((x, index) => new { x, index })
                                .GroupBy(x => x.index / blockSize, y => y.x);
 

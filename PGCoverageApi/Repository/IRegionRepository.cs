@@ -14,6 +14,6 @@ namespace PGCoverageApi.Repository
         void Remove(long key);
         void Update(Region item);
 
-        void AddBulk(string connectionString, ICollection<Region> items, bool storeDataAsJson, bool dataInSingleTable);
+        void AddBulk(string connectionString, ICollection<Region> items, bool storeDataAsJson, bool dataInSingleTable, int blockSize = 10000);
     }
 }

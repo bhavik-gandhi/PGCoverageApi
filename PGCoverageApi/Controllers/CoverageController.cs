@@ -98,5 +98,40 @@ namespace PGCoverageApi.Controllers
             return Content(msg);
 
         }
-     }
+
+        [HttpGet]
+        public IActionResult GetCoverage(int selectionRepCount = 1000, int joinsCount = 1, bool dataInSingleTable = false, bool keepDataAsJson = false)
+        {
+            string connectionString = "Server=bgpostgresmaster.cachftxgju6f.us-east-1.rds.amazonaws.com;User Id=bg;Password=ipreo1359;Database=Orders;Port=5432;Pooling=true;";
+
+            var startTime = DateTime.UtcNow;
+
+            var repCodes = _repRepository.ListRepCodes(connectionString, selectionRepCount, joinsCount, dataInSingleTable, keepDataAsJson);
+
+            _log.Information("done 1");
+            //Rep
+            var startTimeRep = DateTime.UtcNow;
+            var reps = _repRepository.ListReps(connectionString, repCodes, joinsCount, dataInSingleTable);
+            var endTimeRep = DateTime.UtcNow;
+
+            var endTime = DateTime.UtcNow;
+
+            _log.Information("done 2");
+
+            TimeSpan durationRep = endTimeRep - startTimeRep;
+            TimeSpan durationTotalTime = endTime - startTime;
+
+            var msgRep = string.Format("Rep fetched: {0}, Time taken(secs): {1}, Start Time (utc): {2}, End Time(utc): {3}, Record Count per sec:{4}",
+                                    reps.Count<Rep>().ToString(), durationRep.TotalSeconds.ToString(), 
+                                    startTimeRep.ToString(), endTimeRep.ToString(), 
+                                    (reps.Count / durationRep.TotalSeconds).ToString());
+
+
+            var msgTotalTime = string.Format("Total time taken(secs): {0}, total record count: {1}", durationTotalTime.TotalSeconds.ToString(), repCodes.Count.ToString());
+            var msg = msgTotalTime + Environment.NewLine + msgRep + Environment.NewLine;
+            
+
+            return Content(msg);
+        }
+    }
 }
