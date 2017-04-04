@@ -81,9 +81,10 @@ namespace PGCoverageApi.Repository
                 {
                     conn.Open();
 
-                    NpgsqlCommand cmd = new NpgsqlCommand(s, conn);
-                    cmd.ExecuteNonQuery();
-
+                    using (NpgsqlCommand cmd = new NpgsqlCommand(s, conn))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
                     conn.Close();
                 }
 

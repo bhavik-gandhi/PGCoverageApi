@@ -55,37 +55,46 @@ namespace PGCoverageApi.Repository
             var group = items.Select((x, index) => new { x, index })
                                .GroupBy(x => x.index / blockSize, y => y.x);
 
-            IList<string> insertStatements = new List<string>();
-
-            if (!storeDataAsJson)
+            try
             {
-                foreach (var block in group)
+                IList<string> insertStatements = new List<string>();
+
+                if (!storeDataAsJson)
                 {
-                    insertStatements.Add(FetchInsertStatement(block));
+                    foreach (var block in group)
+                    {
+                        insertStatements.Add(FetchInsertStatement(block));
+                    }
+                }
+                else
+                {
+                    foreach (var block in group)
+                    {
+                        insertStatements.Add(FetchInsertStatementAsJson(block, dataInSingleTable));
+                    }
+                }
+
+                foreach (string s in insertStatements)
+                {
+                    //logger.Information("inserting regions: {0}", s);
+
+                    using (NpgsqlConnection conn = new NpgsqlConnection(connectionString))
+                    {
+                        conn.Open();
+
+                        using (NpgsqlCommand cmd = new NpgsqlCommand(s, conn))
+                        {
+                            cmd.ExecuteNonQuery();
+                        }
+
+                        conn.Close();
+                    }
+
                 }
             }
-            else
+            catch(Exception ex)
             {
-                foreach (var block in group)
-                {
-                    insertStatements.Add(FetchInsertStatementAsJson(block, dataInSingleTable));
-                }
-            }
-
-            foreach (string s in insertStatements)
-            {
-                //logger.Information("inserting regions: {0}", s);
-
-                using (NpgsqlConnection conn = new NpgsqlConnection(connectionString))
-                {
-                    conn.Open();
-
-                    NpgsqlCommand cmd = new NpgsqlCommand(s, conn);
-                    cmd.ExecuteNonQuery();
-
-                    conn.Close();
-                }
-
+                logger.Information(ex.ToString());
             }
         }
 
@@ -93,35 +102,41 @@ namespace PGCoverageApi.Repository
         {
             var selectRep = new StringBuilder();
             IList<string> repCodes = new List<string>();
-
-            if(!dataInSingleTable && joinsCount == 1)
+            try
             {
-                selectRep.Append("SELECT rep_cd as RepCode FROM \"Coverage\".tbl_rep LIMIT ");
-                selectRep.Append(selectionRepCount.ToString());
-            }
-
-            if (dataInSingleTable && joinsCount == 1)
-            {
-                selectRep.Append("SELECT coverage_data ->> 'rep_cd' as RepCode FROM \"Coverage\".tbl_coverage WHERE coverage_data ? 'rep_cd' LIMIT ");
-                selectRep.Append(selectionRepCount.ToString());
-            }
-
-            //logger.Information("selectRep : {0}", selectRep.ToString());
-
-            using (NpgsqlConnection conn = new NpgsqlConnection(connectionString))
-            {
-                conn.Open();
-
-                NpgsqlCommand cmd = new NpgsqlCommand(selectRep.ToString(), conn);
-
-                var dr =  cmd.ExecuteReader();
-
-                while(dr.Read())
+                if (!dataInSingleTable && joinsCount == 1)
                 {
-                    repCodes.Add((string)dr["RepCode"]);
+                    selectRep.Append("SELECT rep_cd as RepCode FROM \"Coverage\".tbl_rep LIMIT ");
+                    selectRep.Append(selectionRepCount.ToString());
                 }
 
-                conn.Close();
+                if (dataInSingleTable && joinsCount == 1)
+                {
+                    selectRep.Append("SELECT coverage_data ->> 'rep_cd' as RepCode FROM \"Coverage\".tbl_coverage WHERE coverage_data ? 'rep_cd' LIMIT ");
+                    selectRep.Append(selectionRepCount.ToString());
+                }
+
+                //logger.Information("selectRep : {0}", selectRep.ToString());
+
+                using (NpgsqlConnection conn = new NpgsqlConnection(connectionString))
+                {
+                    conn.Open();
+
+                    NpgsqlCommand cmd = new NpgsqlCommand(selectRep.ToString(), conn);
+
+                    var dr = cmd.ExecuteReader();
+
+                    while (dr.Read())
+                    {
+                        repCodes.Add((string)dr["RepCode"]);
+                    }
+
+                    conn.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Information(ex.ToString());
             }
 
             return repCodes;

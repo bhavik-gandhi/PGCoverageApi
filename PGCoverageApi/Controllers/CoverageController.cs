@@ -27,7 +27,7 @@ namespace PGCoverageApi.Controllers
         }
 
         [HttpPatch]
-        public IActionResult CreateBulk(int channelCount = 1, int regionCount = 2, int branchCount = 3, int repCount = 4, bool storeDataAsJson = false, bool dataInSingleTable = false)
+        public IActionResult CreateBulk(int channelCount = 1, int regionCount = 2, int branchCount = 3, int repCount = 4, bool storeDataAsJson = false, bool dataInSingleTable = false, int batchSize = 10000)
         {
             string connectionString = "Server=bgpostgresmaster.cachftxgju6f.us-east-1.rds.amazonaws.com;User Id=bg;Password=ipreo1359;Database=Orders;Port=5432;Pooling=true;";
             var channels = CoverageDataSetup.FetchChannels(channelCount, 1);
@@ -46,23 +46,23 @@ namespace PGCoverageApi.Controllers
 
             //Channel
             var startTimeChannel = DateTime.UtcNow;
-            _channelRepository.AddBulk(connectionString, channels, storeDataAsJson, dataInSingleTable);
+            _channelRepository.AddBulk(connectionString, channels, storeDataAsJson, dataInSingleTable, batchSize);
             
             var endTimeChannel = DateTime.UtcNow;
 
             //Region
             var startTimeRegion = DateTime.UtcNow;
-            _regionRepository.AddBulk(connectionString, regions, storeDataAsJson, dataInSingleTable);
+            _regionRepository.AddBulk(connectionString, regions, storeDataAsJson, dataInSingleTable, batchSize);
             var endTimeRegion = DateTime.UtcNow;
             
             //Branch
             var startTimeBranch= DateTime.UtcNow;
-            _branchRepository.AddBulk(connectionString, branches, storeDataAsJson, dataInSingleTable);
+            _branchRepository.AddBulk(connectionString, branches, storeDataAsJson, dataInSingleTable, batchSize);
             var endTimeBranch = DateTime.UtcNow;
             
             //Rep
             var startTimeRep = DateTime.UtcNow;
-            _repRepository.AddBulk(connectionString, reps, storeDataAsJson, dataInSingleTable);
+            _repRepository.AddBulk(connectionString, reps, storeDataAsJson, dataInSingleTable, batchSize);
             var endTimeRep = DateTime.UtcNow;
             
             var endTime = DateTime.UtcNow;
