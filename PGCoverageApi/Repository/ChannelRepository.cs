@@ -74,7 +74,7 @@ namespace PGCoverageApi.Repository
 
             foreach (string s in insertStatements)
             {
-                //logger.Information("inserting channels: {0}", s);
+                logger.Information("inserting channels: {0}", s);
 
                 using (NpgsqlConnection conn = new NpgsqlConnection(connectionString))
                 {

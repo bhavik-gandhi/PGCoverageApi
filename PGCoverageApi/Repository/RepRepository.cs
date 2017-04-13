@@ -76,7 +76,7 @@ namespace PGCoverageApi.Repository
 
                 foreach (string s in insertStatements)
                 {
-                    //logger.Information("inserting regions: {0}", s);
+                    logger.Information("inserting regions: {0}", s);
 
                     using (NpgsqlConnection conn = new NpgsqlConnection(connectionString))
                     {
@@ -298,7 +298,7 @@ namespace PGCoverageApi.Repository
             }
             else
             {
-                fix.Append(@"INSERT INTO ""Coverage"".tbl_coverage(coverage_id, coverage_data) VALUES");
+                fix.Append(@"INSERT INTO ""Coverage"".tbl_coverage(coverage_id, coverage_data, coverage_relation) VALUES");
             }
 
             foreach (Rep i in items)
@@ -332,14 +332,30 @@ namespace PGCoverageApi.Repository
                 sb.Append("\"");
                 sb.Append(i.LastModifiedUtcDateTime.ToString());
                 sb.Append("\"");
+                sb.Append("}'");
+                sb.Append(",'{");
+                sb.Append("\"companies\":[");
+                sb.Append("{");
+                sb.Append("\"company_id\":");
+                sb.Append("\"CompanyID-1\"");
+                sb.Append("}]");
                 sb.Append(",");
-                sb.Append("\"parents\":");
+                sb.Append("\"parents\":[");
                 sb.Append("{");
                 sb.Append("\"parent_id\":");
                 sb.Append(i.Branch.BranchId);
-                sb.Append("}");
-                sb.Append("}'");
-                sb.Append("),");
+                sb.Append("}]");
+                sb.Append(",");
+                sb.Append("\"ancestors\":[");
+                sb.Append("{");
+                sb.Append("\"ancestor_id\":");
+                sb.Append(i.Branch.Region.RegionId);
+                sb.Append("},");
+                sb.Append("{");
+                sb.Append("\"ancestor_id\":");
+                sb.Append(i.Branch.Region.Channel.ChannelId);
+                sb.Append("}]");
+                sb.Append("}'),");
                 fix.Append(sb.ToString());
             }
 
