@@ -18,6 +18,7 @@ namespace PGCoverageApi.DataContext
         public DbSet<Region> RegionItems { get; set; }
         public DbSet<Branch> BranchItems { get; set; }
         public DbSet<Rep> RepItems { get; set; }
+        public DbSet<EntityCode> EntityCodeItems { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder builder)
