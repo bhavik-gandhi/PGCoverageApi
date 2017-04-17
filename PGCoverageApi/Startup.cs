@@ -47,7 +47,12 @@ namespace PGCoverageApi
             services.AddSingleton<IRegionRepository, RegionRepository>();
             services.AddSingleton<IBranchRepository, BranchRepository>();
             services.AddSingleton<IRepRepository, RepRepository>();
-            
+            services.AddSingleton<IEntityCodeRepository, EntityCodeRepository>();
+            services.AddSingleton<IGroupRepository, GroupRepository>();
+            services.AddSingleton<IGroupRelationRepository, GroupRelationRepository>();
+            services.AddSingleton<IInvestorRepository, InvestorRepository>();
+            services.AddSingleton<IInvestorRelationRepository, InvestorRelationRepository>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

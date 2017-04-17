@@ -49,22 +49,11 @@ namespace PGCoverageApi.Repository
             _context.SaveChanges();
         }
 
-        public void AddBulk(string connectionString, ICollection<EntityCode> items, bool storeDataAsJson = false, bool dataInSingleTable = false, int blockSize = 10000)
+        public void AddBulk(string connectionString, ICollection<EntityCode> items)
         {
-
-            var group = items.Select((x, index) => new { x, index })
-                               .GroupBy(x => x.index / blockSize, y => y.x);
-
             IList<string> insertStatements = new List<string>();
-
-            if (!storeDataAsJson)
-            {
-                foreach (var block in group)
-                {
-                    insertStatements.Add(FetchInsertStatement(block));
-                }
-            }
-
+            insertStatements.Add(FetchInsertStatement(items));
+            
             foreach (string s in insertStatements)
             {
                 logger.Information("inserting entity code: {0}", s);
