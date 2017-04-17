@@ -20,6 +20,7 @@ namespace PGCoverageApi.DataContext
         public DbSet<Rep> RepItems { get; set; }
         public DbSet<EntityCode> EntityCodeItems { get; set; }
         public DbSet<Group> GroupItems { get; set; }
+        public DbSet<Investor> InvestorItems { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder builder)
