@@ -152,7 +152,7 @@ namespace PGCoverageApi.Utilities
             var entity = _entityCodes.FirstOrDefault<EntityCode>(e => e.EntityCd == entityCode);
             var _log = new LoggerConfiguration().WriteTo.File(@"C:\Temp\abc1.log").CreateLogger();
 
-            for (long cnt = 0; cnt < groupCnt; cnt++)
+            for (long cnt = 1; cnt <= groupCnt; cnt++)
             {
                 _log.Information("FetchGroup - GroupCount - {0}", cnt.ToString());
 
@@ -161,8 +161,8 @@ namespace PGCoverageApi.Utilities
                     GroupId = startId + cnt,
                     ClientId = _clientId,
                     CompanyId = _companyId,
-                    GroupCode = entityCode + RandomString(5),
-                    GroupName = RandomString(20),
+                    GroupCode = entityCode + RandomString(5, false),
+                    GroupName = RandomString(20, true),
                     GroupIndex = Convert.ToInt64(RandomNumber(5)),
                     ActiveInd = true,
                     EntityCode = entity
@@ -180,9 +180,9 @@ namespace PGCoverageApi.Utilities
         }
 
         private static Random random = new Random();
-        private static string RandomString(int length)
+        private static string RandomString(int length, bool isSpaceAllowed)
         {
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" + (isSpaceAllowed ? " " : string.Empty);
             return new string(Enumerable.Repeat(chars, length)
               .Select(s => s[random.Next(s.Length)]).ToArray());
         }

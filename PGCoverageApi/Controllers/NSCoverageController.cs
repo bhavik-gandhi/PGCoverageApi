@@ -35,20 +35,21 @@ namespace PGCoverageApi.Controllers
 
             NSCoverageDataSetup.FetchEntityCode();
 
-            var channels = NSCoverageDataSetup.FetchChannels(channelCount, 1);
+            var channels = NSCoverageDataSetup.FetchChannels(channelCount, 0);
 
             _log.Information("channel_maxid is:" + channels.Max<Group>(i => i.GroupId));
-            /*
-            var regions = CoverageDataSetup.FetchRegions(regionCount, channels.Max<Group>(i => i.GroupId));
+            
+            var regions = NSCoverageDataSetup.FetchRegions(regionCount, channels.Max<Group>(i => i.GroupId));
 
-            _log.Information("region_maxid is:" + regions.Max<Region>(i => i.RegionId));
+            _log.Information("region_maxid is:" + regions.Max<Group>(i => i.GroupId));
 
-            var branches = CoverageDataSetup.FetchBranches(branchCount, regions.Max<Region>(i => i.RegionId));
+            var branches = NSCoverageDataSetup.FetchBranches(branchCount, regions.Max<Group>(i => i.GroupId));
 
-            _log.Information("branch_maxid is:" + branches.Max<Branch>(i => i.BranchId));
-            var reps = CoverageDataSetup.FetchReps(repCount, branches.Max<Branch>(i => i.BranchId));
+            _log.Information("branch_maxid is:" + branches.Max<Group>(i => i.GroupId));
 
-            */
+            var reps = NSCoverageDataSetup.FetchReps(repCount, branches.Max<Group>(i => i.GroupId));
+
+            
             var startTime = DateTime.UtcNow;
 
             //Channel
@@ -58,52 +59,51 @@ namespace PGCoverageApi.Controllers
             var endTimeChannel = DateTime.UtcNow;
 
             ////Region
-            //var startTimeRegion = DateTime.UtcNow;
-            //_regionRepository.AddBulk(connectionString, regions, storeDataAsJson, dataInSingleTable, batchSize);
-            //var endTimeRegion = DateTime.UtcNow;
+            var startTimeRegion = DateTime.UtcNow;
+            _groupRepository.AddBulk(connectionString, regions, batchSize);
+            var endTimeRegion = DateTime.UtcNow;
 
             ////Branch
-            //var startTimeBranch= DateTime.UtcNow;
-            //_branchRepository.AddBulk(connectionString, branches, storeDataAsJson, dataInSingleTable, batchSize);
-            //var endTimeBranch = DateTime.UtcNow;
+            var startTimeBranch= DateTime.UtcNow;
+            _groupRepository.AddBulk(connectionString, branches, batchSize);
+            var endTimeBranch = DateTime.UtcNow;
 
             ////Rep
-            //var startTimeRep = DateTime.UtcNow;
-            //_repRepository.AddBulk(connectionString, reps, storeDataAsJson, dataInSingleTable, batchSize);
-            //var endTimeRep = DateTime.UtcNow;
+            var startTimeRep = DateTime.UtcNow;
+            _groupRepository.AddBulk(connectionString, reps, batchSize);
+            var endTimeRep = DateTime.UtcNow;
 
-            //var endTime = DateTime.UtcNow;
+            var endTime = DateTime.UtcNow;
 
-            //TimeSpan durationChannel = endTimeChannel - startTimeChannel;
-            //TimeSpan durationRegion = endTimeRegion - startTimeRegion;
-            //TimeSpan durationBranch = endTimeBranch - startTimeBranch;
-            //TimeSpan durationRep = endTimeRep - startTimeRep;
-            //TimeSpan durationTotalTime = endTime - startTime;
+            TimeSpan durationChannel = endTimeChannel - startTimeChannel;
+            TimeSpan durationRegion = endTimeRegion - startTimeRegion;
+            TimeSpan durationBranch = endTimeBranch - startTimeBranch;
+            TimeSpan durationRep = endTimeRep - startTimeRep;
+            TimeSpan durationTotalTime = endTime - startTime;
 
-            //var msgChannel = string.Format("Channel created: {0}, Time taken(secs): {1}, Start Time (utc): {2}, End Time(utc): {3}, Record Count per sec:{4}",
-            //                        channels.Count, durationChannel.TotalSeconds.ToString(), startTimeChannel.ToString(), endTimeChannel.ToString(), (channels.Count / durationChannel.TotalSeconds).ToString());
+            var msgChannel = string.Format("Channel created: {0}, Time taken(secs): {1}, Start Time (utc): {2}, End Time(utc): {3}, Record Count per sec:{4}",
+                                    channels.Count, durationChannel.TotalSeconds.ToString(), startTimeChannel.ToString(), endTimeChannel.ToString(), (channels.Count / durationChannel.TotalSeconds).ToString());
 
-            //var msgRegion = string.Format("Region created: {0}, Time taken(secs): {1}, Start Time (utc): {2}, End Time(utc): {3}, Record Count per sec:{4}",
-            //                        regions.Count, durationRegion.TotalSeconds.ToString(), startTimeRegion.ToString(), endTimeRegion.ToString(), (regions.Count / durationRegion.TotalSeconds).ToString());
-
-
-            //var msgBranch = string.Format("Branch created: {0}, Time taken(secs): {1}, Start Time (utc): {2}, End Time(utc): {3}, Record Count per sec:{4}",
-            //                        branches.Count, durationBranch.TotalSeconds.ToString(), startTimeBranch.ToString(), endTimeBranch.ToString(), (branches.Count / durationBranch.TotalSeconds).ToString());
+            var msgRegion = string.Format("Region created: {0}, Time taken(secs): {1}, Start Time (utc): {2}, End Time(utc): {3}, Record Count per sec:{4}",
+                                    regions.Count, durationRegion.TotalSeconds.ToString(), startTimeRegion.ToString(), endTimeRegion.ToString(), (regions.Count / durationRegion.TotalSeconds).ToString());
 
 
-            //var msgRep = string.Format("Rep created: {0}, Time taken(secs): {1}, Start Time (utc): {2}, End Time(utc): {3}, Record Count per sec:{4}",
-            //                        reps.Count, durationRep.TotalSeconds.ToString(), startTimeRep.ToString(), endTimeRep.ToString(), (reps.Count/ durationRep.TotalSeconds).ToString());
-
-            //long totalCount = channels.Count + regions.Count + branches.Count + reps.Count;
-
-            //var msgTotalTime = string.Format("Total time taken(secs): {0}, total record count: {1}, Record Count per sec:{2}", durationTotalTime.TotalSeconds.ToString(), totalCount.ToString(), (totalCount/ durationTotalTime.TotalSeconds).ToString());
+            var msgBranch = string.Format("Branch created: {0}, Time taken(secs): {1}, Start Time (utc): {2}, End Time(utc): {3}, Record Count per sec:{4}",
+                                    branches.Count, durationBranch.TotalSeconds.ToString(), startTimeBranch.ToString(), endTimeBranch.ToString(), (branches.Count / durationBranch.TotalSeconds).ToString());
 
 
-            //var msg = msgTotalTime + Environment.NewLine + msgChannel + Environment.NewLine + msgRegion + Environment.NewLine + msgBranch + Environment.NewLine + msgRep + Environment.NewLine;
-            //var msg1 = channelCount.ToString();
+            var msgRep = string.Format("Rep created: {0}, Time taken(secs): {1}, Start Time (utc): {2}, End Time(utc): {3}, Record Count per sec:{4}",
+                                    reps.Count, durationRep.TotalSeconds.ToString(), startTimeRep.ToString(), endTimeRep.ToString(), (reps.Count / durationRep.TotalSeconds).ToString());
 
-            //return Content(msg);
-            return Content("done");
+            long totalCount = channels.Count + regions.Count + branches.Count + reps.Count;
+
+            var msgTotalTime = string.Format("Total time taken(secs): {0}, total record count: {1}, Record Count per sec:{2}", durationTotalTime.TotalSeconds.ToString(), totalCount.ToString(), (totalCount / durationTotalTime.TotalSeconds).ToString());
+
+
+            var msg = msgTotalTime + Environment.NewLine + msgChannel + Environment.NewLine + msgRegion + Environment.NewLine + msgBranch + Environment.NewLine + msgRep + Environment.NewLine;
+            var msg1 = channelCount.ToString();
+
+            return Content(msg);
 
         }
         /*
