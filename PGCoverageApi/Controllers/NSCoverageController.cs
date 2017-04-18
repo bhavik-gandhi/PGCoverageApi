@@ -94,6 +94,8 @@ namespace PGCoverageApi.Controllers
             TimeSpan durationRegion = endTimeRegion - startTimeRegion;
             TimeSpan durationBranch = endTimeBranch - startTimeBranch;
             TimeSpan durationRep = endTimeRep - startTimeRep;
+            TimeSpan durationInvestorGroup = endTimeInvestorGroup - startTimeInvestorGroup;
+            TimeSpan durationInvestor = endTimeInvestor - startTimeInvestor;
             TimeSpan durationTotalTime = endTime - startTime;
 
             var msgChannel = string.Format("Channel created: {0}, Time taken(secs): {1}, Start Time (utc): {2}, End Time(utc): {3}, Record Count per sec:{4}",
@@ -110,12 +112,19 @@ namespace PGCoverageApi.Controllers
             var msgRep = string.Format("Rep created: {0}, Time taken(secs): {1}, Start Time (utc): {2}, End Time(utc): {3}, Record Count per sec:{4}",
                                     reps.Count, durationRep.TotalSeconds.ToString(), startTimeRep.ToString(), endTimeRep.ToString(), (reps.Count / durationRep.TotalSeconds).ToString());
 
+            var msgInvestorGroup = string.Format("InvestorGroup created: {0}, Time taken(secs): {1}, Start Time (utc): {2}, End Time(utc): {3}, Record Count per sec:{4}",
+                                    investorGroup.Count, durationInvestorGroup.TotalSeconds.ToString(), startTimeInvestorGroup.ToString(), endTimeInvestorGroup.ToString(), (investorGroup.Count / durationInvestorGroup.TotalSeconds).ToString());
+
+            var msgInvestor = string.Format("Investor created: {0}, Time taken(secs): {1}, Start Time (utc): {2}, End Time(utc): {3}, Record Count per sec:{4}",
+                                    investor.Count, durationInvestor.TotalSeconds.ToString(), startTimeInvestor.ToString(), endTimeInvestor.ToString(), (investor.Count / durationInvestor.TotalSeconds).ToString());
+
+
             long totalCount = channels.Count + regions.Count + branches.Count + reps.Count;
 
             var msgTotalTime = string.Format("Total time taken(secs): {0}, total record count: {1}, Record Count per sec:{2}", durationTotalTime.TotalSeconds.ToString(), totalCount.ToString(), (totalCount / durationTotalTime.TotalSeconds).ToString());
 
 
-            var msg = msgTotalTime + Environment.NewLine + msgChannel + Environment.NewLine + msgRegion + Environment.NewLine + msgBranch + Environment.NewLine + msgRep + Environment.NewLine;
+            var msg = msgTotalTime + Environment.NewLine + msgChannel + Environment.NewLine + msgRegion + Environment.NewLine + msgBranch + Environment.NewLine + msgRep + Environment.NewLine + msgInvestorGroup + Environment.NewLine + msgInvestor + Environment.NewLine;
             var msg1 = channelCount.ToString();
 
             return Content(msg);
