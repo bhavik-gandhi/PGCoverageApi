@@ -29,7 +29,7 @@ namespace PGCoverageApi.Controllers
         }
 
         [HttpPatch]
-        public IActionResult CreateBulk(long channelCount = 1, long regionCount = 2, long branchCount = 3, long repCount = 4, bool onlyPOMStyleData = true, long batchSize = 10000)
+        public IActionResult CreateBulk(long channelCount = 1, long regionCount = 2, long branchCount = 3, long repCount = 4, long investorGroupCount = 5, long investorCount = 5, bool onlyPOMStyleData = true, long batchSize = 10000)
         {
             string connectionString = "Server=bgpostgresmaster.cachftxgju6f.us-east-1.rds.amazonaws.com;User Id=bg;Password=ipreo1359;Database=Orders;Port=5432;Pooling=true;";
 
@@ -49,7 +49,10 @@ namespace PGCoverageApi.Controllers
 
             var reps = NSCoverageDataSetup.FetchReps(repCount, branches.Max<Group>(i => i.GroupId));
 
-            
+            var investorGroup = NSCoverageDataSetup.FetchInvestorGroup(investorGroupCount, 0);
+
+            var investor = NSCoverageDataSetup.FetchInvestorGroup(investorCount, investorGroup.Max<Investor>(i => i.InvestorId));
+
             var startTime = DateTime.UtcNow;
 
             //Channel
@@ -72,6 +75,18 @@ namespace PGCoverageApi.Controllers
             var startTimeRep = DateTime.UtcNow;
             _groupRepository.AddBulk(connectionString, reps, batchSize);
             var endTimeRep = DateTime.UtcNow;
+
+            ////InvestorGroup
+            var startTimeInvestorGroup = DateTime.UtcNow;
+            _investorRepository.AddBulk(connectionString, investorGroup, batchSize);
+            var endTimeInvestorGroup = DateTime.UtcNow;
+
+
+            ////Rep
+            var startTimeInvestor = DateTime.UtcNow;
+            _groupRepository.AddBulk(connectionString, reps, batchSize);
+            var endTimeInvestor = DateTime.UtcNow;
+
 
             var endTime = DateTime.UtcNow;
 

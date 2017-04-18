@@ -40,7 +40,7 @@ namespace PGCoverageApi
             services.AddDbContext<CoverageContext>(opt => { opt.UseNpgsql(Configuration.GetConnectionString("CoverageContext")); },ServiceLifetime.Singleton);
             services.AddSingleton<Serilog.ILogger>(x => new LoggerConfiguration()
                                                         .MinimumLevel.Debug()
-                                                        .WriteTo.RollingFile(Path.Combine(CurrentEnvironment.ContentRootPath, "Logs/myapp-{Date}.txt"))
+                                                        .WriteTo.RollingFile(Path.Combine(@"C:\Temp\", "Logs/myapp-{Date}.txt"))
                                                         .CreateLogger());
             services.AddSingleton<IChannelRepository, ChannelRepository>();
             services.AddSingleton<IChannelRepository, ChannelRepository>();

@@ -50,7 +50,7 @@ namespace PGCoverageApi.Repository
             _context.SaveChanges();
         }
 
-        public void AddBulk(string connectionString, ICollection<Investor> items, bool storeDataAsJson = false, bool dataInSingleTable = false, int blockSize = 10000)
+        public void AddBulk(string connectionString, ICollection<Investor> items, long blockSize = 10000)
         {
             var group = items.Select((x, index) => new { x, index })
                                .GroupBy(x => x.index / blockSize, y => y.x);
@@ -59,14 +59,11 @@ namespace PGCoverageApi.Repository
             {
                 IList<string> insertStatements = new List<string>();
 
-                if (!storeDataAsJson)
+                foreach (var block in group)
                 {
-                    foreach (var block in group)
-                    {
-                        insertStatements.Add(FetchInsertStatement(block));
-                    }
+                    insertStatements.Add(FetchInsertStatement(block));
                 }
-
+               
                 foreach (string s in insertStatements)
                 {
                     logger.Information("inserting group: {0}", s);
@@ -273,9 +270,16 @@ namespace PGCoverageApi.Repository
                 sb.Append(i.InvestorIndex.ToString());
                 sb.Append(",");
                 sb.Append(i.ActiveInd.ToString());
-                sb.Append(",'");
-                sb.Append(i.InvestorData);
-                sb.Append("'),");
+                if (string.IsNullOrWhiteSpace(i.InvestorData))
+                {
+                    sb.Append(", NULL),");
+                }
+                else
+                {
+                    sb.Append(",'");
+                    sb.Append(i.InvestorData);
+                    sb.Append("'),");
+                }
                 fix.Append(sb.ToString());
             }
 

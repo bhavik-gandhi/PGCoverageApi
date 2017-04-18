@@ -49,7 +49,7 @@ namespace PGCoverageApi.Repository
             _context.SaveChanges();
         }
 
-        public void AddBulk(string connectionString, ICollection<InvestorRelation> items, bool storeDataAsJson = false, bool dataInSingleTable = false, int blockSize = 10000)
+        public void AddBulk(string connectionString, ICollection<InvestorRelation> items, bool storeDataAsJson = false, bool dataInSingleTable = false, long blockSize = 10000)
         {
 
             var group = items.Select((x, index) => new { x, index })

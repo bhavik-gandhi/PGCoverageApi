@@ -29,6 +29,9 @@ namespace PGCoverageApi.Utilities
         private static ICollection<Group> _branches;
         private static ICollection<Group> _reps;
 
+        private static ICollection<Investor> _investorGroup;
+        private static ICollection<Investor> _investor;
+
         public static ICollection<EntityCode> FetchEntityCode()
         {
             if (_entityCodes == null || !_entityCodes.Any())
@@ -72,10 +75,6 @@ namespace PGCoverageApi.Utilities
 
         public static ICollection<Group> FetchReps(long repCount = 100, long startId = 1)
         {
-            //var _log = new LoggerConfiguration().WriteTo.File(@"C:\Temp\abc1.log").CreateLogger();
-
-            //_log.Information("FetchReps - repCount - {0}", repCount.ToString());
-
             if (_reps == null || !_reps.Any())
             {
                 //_log.Information("rep is null");
@@ -84,12 +83,33 @@ namespace PGCoverageApi.Utilities
             return _reps;
         }
 
-        public static void BuildCoverage(long channel = 5, long region = 15, long branch = 200, long rep = 75)
+        public static ICollection<Investor> FetchInvestorGroup(long investorGroupCount = 100, long startId = 1)
         {
-            BuildGroup(_EntityCodeChannel);
-            BuildGroup(_EntityCodeRegion);
-            BuildGroup(_EntityCodeBranch);
-            BuildGroup(_EntityCodeRep);
+            if (_investorGroup == null || !_investorGroup.Any())
+            {
+                //_log.Information("rep is null");
+                _investorGroup = BuildInvestor(_EntityCodeRep, investorGroupCount, startId);
+            }
+            return _investorGroup;
+        }
+
+        public static ICollection<Investor> FetchInvestor(long investorCount = 25, long startId = 1)
+        {
+            if (_investor == null || !_investor.Any())
+            {
+                //_log.Information("rep is null");
+                _investor = BuildInvestor(_EntityCodeRep, investorCount, startId);
+            }
+            return _investor;
+        }
+
+        public static void BuildCoverage(long channel = 5, long region = 15, long branch = 200, long rep = 75, long investorGroup = 100, long investor = 25)
+        {
+            BuildGroup(_EntityCodeChannel, channel);
+            BuildGroup(_EntityCodeRegion, region);
+            BuildGroup(_EntityCodeBranch, branch);
+            BuildGroup(_EntityCodeRep, rep);
+
         }
 
         private static void BuildEntityCode()
@@ -173,7 +193,35 @@ namespace PGCoverageApi.Utilities
 
             return _groups;
         }
-        
+
+        private static ICollection<Investor> BuildInvestor(string entityCode, long groupCnt = 10, long startId = 1)
+        {
+            var _inv = new List<Investor>();
+            var entity = _entityCodes.FirstOrDefault<EntityCode>(e => e.EntityCd == entityCode);
+            var _log = new LoggerConfiguration().WriteTo.File(@"C:\Temp\abc1.log").CreateLogger();
+
+            for (long cnt = 1; cnt <= groupCnt; cnt++)
+            {
+                _log.Information("FetchGroup - GroupCount - {0}", cnt.ToString());
+
+                var investor = new Investor()
+                {
+                    InvestorId = startId + cnt,
+                    ClientId = _clientId,
+                    CompanyId = _companyId,
+                    InvestorCode = entityCode + RandomString(5, false),
+                    InvestorName = RandomString(20, true),
+                    InvestorIndex = Convert.ToInt64(RandomNumber(5)),
+                    ActiveInd = true,
+                    EntityCode = entity
+                };
+
+                _inv.Add(investor);
+            }
+
+            return _inv;
+        }
+  
         private static void BuildGroupRelation(long channelCnt = 10, long startId = 1)
         {
 
