@@ -29,14 +29,17 @@ namespace PGCoverageApi.Controllers
         }
 
         [HttpPatch]
-        public IActionResult CreateBulk(int channelCount = 1, int regionCount = 2, int branchCount = 3, int repCount = 4, bool onlyPOMStyleData = true, int batchSize = 10000)
+        public IActionResult CreateBulk(long channelCount = 1, long regionCount = 2, long branchCount = 3, long repCount = 4, bool onlyPOMStyleData = true, long batchSize = 10000)
         {
             string connectionString = "Server=bgpostgresmaster.cachftxgju6f.us-east-1.rds.amazonaws.com;User Id=bg;Password=ipreo1359;Database=Orders;Port=5432;Pooling=true;";
+
+            NSCoverageDataSetup.FetchEntityCode();
+
             var channels = NSCoverageDataSetup.FetchChannels(channelCount, 1);
 
-            _log.Information("channel_maxid is:" + channels.Max<Channel>(i => i.ChannelId));
-
-            var regions = CoverageDataSetup.FetchRegions(regionCount, channels.Max<Channel>(i => i.ChannelId));
+            _log.Information("channel_maxid is:" + channels.Max<Group>(i => i.GroupId));
+            /*
+            var regions = CoverageDataSetup.FetchRegions(regionCount, channels.Max<Group>(i => i.GroupId));
 
             _log.Information("region_maxid is:" + regions.Max<Region>(i => i.RegionId));
 
@@ -45,14 +48,14 @@ namespace PGCoverageApi.Controllers
             _log.Information("branch_maxid is:" + branches.Max<Branch>(i => i.BranchId));
             var reps = CoverageDataSetup.FetchReps(repCount, branches.Max<Branch>(i => i.BranchId));
 
-            
+            */
             var startTime = DateTime.UtcNow;
 
-            ////Channel
-            //var startTimeChannel = DateTime.UtcNow;
-            //_channelRepository.AddBulk(connectionString, channels, storeDataAsJson, dataInSingleTable, batchSize);
+            //Channel
+            var startTimeChannel = DateTime.UtcNow;
+            _groupRepository.AddBulk(connectionString, channels, batchSize);
 
-            //var endTimeChannel = DateTime.UtcNow;
+            var endTimeChannel = DateTime.UtcNow;
 
             ////Region
             //var startTimeRegion = DateTime.UtcNow;

@@ -24,10 +24,10 @@ namespace PGCoverageApi.Utilities
         private static string _entityCodeTypeGroup = "Group";
         private static string _entityCodeTypeInvestor = "Investor";
 
-        private static ICollection<Channel> _channels;
-        private static ICollection<Region> _regions;
-        private static ICollection<Branch> _branches;
-        private static ICollection<Rep> _reps;
+        private static ICollection<Group> _channels;
+        private static ICollection<Group> _regions;
+        private static ICollection<Group> _branches;
+        private static ICollection<Group> _reps;
 
         public static ICollection<EntityCode> FetchEntityCode()
         {
@@ -39,38 +39,38 @@ namespace PGCoverageApi.Utilities
             return _entityCodes;
         }
 
-        public static ICollection<Channel> FetchChannels(long channelCount = 5, long startId = 1)
+        public static ICollection<Group> FetchChannels(long channelCount = 5, long startId = 1)
         {
             if (_channels == null || !_channels.Any())
             {
-                BuildChannels(channelCount, startId);
+                _channels = BuildGroup(_EntityCodeChannel, channelCount, startId);
             }
 
             return _channels;
         }
 
 
-        public static ICollection<Region> FetchRegions(long regionCount = 15, long startId = 1)
+        public static ICollection<Group> FetchRegions(long regionCount = 15, long startId = 1)
         {
 
             if (_regions == null || !_regions.Any())
             {
-                BuildRegions(regionCount, startId);
+                _regions = BuildGroup(_EntityCodeRegion, regionCount, startId);
             }
             return _regions;
             
         }
 
-        public static ICollection<Branch> FetchBranches(long branchCount = 250, long startId = 1)
+        public static ICollection<Group> FetchBranches(long branchCount = 250, long startId = 1)
         {
             if (_branches == null || !_branches.Any())
             {
-                BuildBranches(branchCount, startId);
+                _branches = BuildGroup(_EntityCodeBranch, branchCount, startId);
             }
             return _branches;
         }
 
-        public static ICollection<Rep> FetchReps(long repCount = 100, long startId = 1)
+        public static ICollection<Group> FetchReps(long repCount = 100, long startId = 1)
         {
             //var _log = new LoggerConfiguration().WriteTo.File(@"C:\Temp\abc1.log").CreateLogger();
 
@@ -79,18 +79,17 @@ namespace PGCoverageApi.Utilities
             if (_reps == null || !_reps.Any())
             {
                 //_log.Information("rep is null");
-                BuildReps(repCount, startId);
+                _reps = BuildGroup(_EntityCodeRep, repCount, startId);
             }
             return _reps;
         }
 
         public static void BuildCoverage(long channel = 5, long region = 15, long branch = 200, long rep = 75)
         {
-            BuildChannels(channel);
-            BuildRegions(region);
-            BuildBranches(branch);
-            BuildReps(rep);
-
+            BuildGroup(_EntityCodeChannel);
+            BuildGroup(_EntityCodeRegion);
+            BuildGroup(_EntityCodeBranch);
+            BuildGroup(_EntityCodeRep);
         }
 
         private static void BuildEntityCode()
@@ -105,6 +104,7 @@ namespace PGCoverageApi.Utilities
             entityCode.ActiveInd= true;
             _entityCodes.Add(entityCode);
 
+            entityCode = new EntityCode();
             entityCode.EntityCodeId = 2;
             entityCode.EntityCd = _EntityCodeRegion;
             entityCode.EntityCodeName = "Region";
@@ -112,6 +112,7 @@ namespace PGCoverageApi.Utilities
             entityCode.ActiveInd = true;
             _entityCodes.Add(entityCode);
 
+            entityCode = new EntityCode();
             entityCode.EntityCodeId = 3;
             entityCode.EntityCd = _EntityCodeBranch;
             entityCode.EntityCodeName = "Branch";
@@ -119,6 +120,7 @@ namespace PGCoverageApi.Utilities
             entityCode.ActiveInd = true;
             _entityCodes.Add(entityCode);
 
+            entityCode = new EntityCode();
             entityCode.EntityCodeId = 4;
             entityCode.EntityCd = _EntityCodeRep;
             entityCode.EntityCodeName = "Rep";
@@ -126,6 +128,7 @@ namespace PGCoverageApi.Utilities
             entityCode.ActiveInd = true;
             _entityCodes.Add(entityCode);
 
+            entityCode = new EntityCode();
             entityCode.EntityCodeId = 5;
             entityCode.EntityCd = _EntityCodeInvestorGroup;
             entityCode.EntityCodeName = "InvestorGroup";
@@ -133,6 +136,7 @@ namespace PGCoverageApi.Utilities
             entityCode.ActiveInd = true;
             _entityCodes.Add(entityCode);
 
+            entityCode = new EntityCode();
             entityCode.EntityCodeId = 6;
             entityCode.EntityCd = _EntityCodeInvestor;
             entityCode.EntityCodeName = "Investor";
@@ -142,114 +146,39 @@ namespace PGCoverageApi.Utilities
 
         }
 
-        private static void BuildChannels(long channelCnt = 10, long startId = 1)
+        private static ICollection<Group> BuildGroup(string entityCode, long groupCnt = 10, long startId = 1)
         {
-            _channels = new List<Channel>();
+            var _groups = new List<Group>();
+            var entity = _entityCodes.FirstOrDefault<EntityCode>(e => e.EntityCd == entityCode);
+            var _log = new LoggerConfiguration().WriteTo.File(@"C:\Temp\abc1.log").CreateLogger();
 
-            for (int cnt = 0 ; cnt < channelCnt; cnt++ )
+            for (long cnt = 0; cnt < groupCnt; cnt++)
             {
-                var channel = new Channel()
+                _log.Information("FetchGroup - GroupCount - {0}", cnt.ToString());
+
+                var group = new Group()
                 {
+                    GroupId = startId + cnt,
                     ClientId = _clientId,
-                    ChannelId = startId + cnt,
-                    ChannelCode = _EntityCodeChannel + RandomString(5),
-                    ChannelName = RandomString(20),
+                    CompanyId = _companyId,
+                    GroupCode = entityCode + RandomString(5),
+                    GroupName = RandomString(20),
+                    GroupIndex = Convert.ToInt64(RandomNumber(5)),
                     ActiveInd = true,
-                    LastModifiedUserId = Convert.ToInt64(RandomNumber(10)),
-                    LastModifiedUtcDateTime = DateTime.UtcNow
+                    EntityCode = entity
                 };
 
-                _channels.Add(channel);
-
+                _groups.Add(group);
             }
-        }
 
-        private static void BuildRegions(long regionCnt = 100, long startId = 1)
+            return _groups;
+        }
+        
+        private static void BuildGroupRelation(long channelCnt = 10, long startId = 1)
         {
-            _regions = new List<Region>();
-            var regionId = startId;
-
-            foreach(var channel in _channels)
-            {
-                for (int cnt = 1; cnt <= regionCnt; cnt++)
-                {
-                    var region = new Region()
-                    {
-                        ClientId = _clientId,
-                        RegionId = ++regionId,
-                        RegionCode = _EntityCodeRegion + RandomString(5),
-                        RegionName = RandomString(20),
-                        RegionRankIndex = Convert.ToInt64(RandomNumber(5)),
-                        ActiveInd = true,
-                        LastModifiedUserId = Convert.ToInt64(RandomNumber(10)),
-                        LastModifiedUtcDateTime = DateTime.UtcNow,
-                        Channel = channel
-                    };
-
-                    _regions.Add(region);
-                }
-            }
 
         }
 
-        private static void BuildBranches(long branchCnt = 1000, long startId = 1)
-        {
-            _branches = new List<Branch>();
-            var branchId = startId;
-
-            foreach (var region in _regions)
-            {
-                for (int cnt = 1; cnt <= branchCnt; cnt++)
-                {
-                    var branch = new Branch()
-                    {
-                        ClientId = _clientId,
-                        BranchId = ++branchId,
-                        BranchCode = _EntityCodeBranch + RandomString(5),
-                        BranchName = RandomString(20),
-                        BranchRankIndex = Convert.ToInt64(RandomNumber(5)),
-                        ActiveInd = true,
-                        LastModifiedUserId = Convert.ToInt64(RandomNumber(10)),
-                        LastModifiedUtcDateTime = DateTime.UtcNow,
-                        Region = region
-                    };
-
-                    _branches.Add(branch);
-                }
-            }
-        }
-
-        private static void BuildReps(long repCnt = 10000, long startId = 1)
-        {
-            _reps = new List<Rep>();
-            var repId = startId;
-            
-
-            foreach (var branch in _branches)
-            {
-                for (int cnt = 1; cnt <= repCnt; cnt++)
-                {
-                    var rep = new Rep()
-                    {
-                        ClientId = _clientId,
-                        RepId = ++repId,
-                        RepCode = _EntityCodeRep + RandomString(5),
-                        RepName = RandomString(20),
-                        RepRankIndex = Convert.ToInt64(RandomNumber(5)),
-                        ActiveInd = true,
-                        LastModifiedUserId = Convert.ToInt64(RandomNumber(10)),
-                        LastModifiedUtcDateTime = DateTime.UtcNow,
-                        Branch = branch
-                    };
-
-                    _reps.Add(rep);
-                }
-            }
-             
-        }
-
-
-       
         private static Random random = new Random();
         private static string RandomString(int length)
         {
