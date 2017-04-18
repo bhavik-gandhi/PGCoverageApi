@@ -51,7 +51,7 @@ namespace PGCoverageApi.Controllers
 
             var investorGroup = NSCoverageDataSetup.FetchInvestorGroup(investorGroupCount, 0);
 
-            var investor = NSCoverageDataSetup.FetchInvestorGroup(investorCount, investorGroup.Max<Investor>(i => i.InvestorId));
+            var investor = NSCoverageDataSetup.FetchInvestor(investorCount, investorGroup.Max<Investor>(i => i.InvestorId));
 
             var startTime = DateTime.UtcNow;
 
@@ -84,7 +84,7 @@ namespace PGCoverageApi.Controllers
 
             ////Rep
             var startTimeInvestor = DateTime.UtcNow;
-            _groupRepository.AddBulk(connectionString, reps, batchSize);
+            _investorRepository.AddBulk(connectionString, investor, batchSize);
             var endTimeInvestor = DateTime.UtcNow;
 
 

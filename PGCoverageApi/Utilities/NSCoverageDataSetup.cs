@@ -88,7 +88,7 @@ namespace PGCoverageApi.Utilities
             if (_investorGroup == null || !_investorGroup.Any())
             {
                 //_log.Information("rep is null");
-                _investorGroup = BuildInvestor(_EntityCodeRep, investorGroupCount, startId);
+                _investorGroup = BuildInvestor(_EntityCodeInvestorGroup, investorGroupCount, startId);
             }
             return _investorGroup;
         }
@@ -98,7 +98,7 @@ namespace PGCoverageApi.Utilities
             if (_investor == null || !_investor.Any())
             {
                 //_log.Information("rep is null");
-                _investor = BuildInvestor(_EntityCodeRep, investorCount, startId);
+                _investor = BuildInvestor(_EntityCodeInvestor, investorCount, startId);
             }
             return _investor;
         }
@@ -181,7 +181,7 @@ namespace PGCoverageApi.Utilities
                     GroupId = startId + cnt,
                     ClientId = _clientId,
                     CompanyId = _companyId,
-                    GroupCode = entityCode + RandomString(5, false),
+                    GroupCode = RandomString(5, false) + entityCode,
                     GroupName = RandomString(20, true),
                     GroupIndex = Convert.ToInt64(RandomNumber(5)),
                     ActiveInd = true,
@@ -209,7 +209,7 @@ namespace PGCoverageApi.Utilities
                     InvestorId = startId + cnt,
                     ClientId = _clientId,
                     CompanyId = _companyId,
-                    InvestorCode = entityCode + RandomString(5, false),
+                    InvestorCode = RandomString(5, false) + entityCode,
                     InvestorName = RandomString(20, true),
                     InvestorIndex = Convert.ToInt64(RandomNumber(5)),
                     ActiveInd = true,
