@@ -28,9 +28,14 @@ namespace PGCoverageApi.Utilities
         private static ICollection<Group> _regions;
         private static ICollection<Group> _branches;
         private static ICollection<Group> _reps;
+        private static ICollection<GroupRelation> _regionsRelation;
+        private static ICollection<GroupRelation> _branchesRelation;
+        private static ICollection<GroupRelation> _repsRelation;
 
         private static ICollection<Investor> _investorGroup;
         private static ICollection<Investor> _investor;
+
+        private static ICollection<InvestorRelation> _investorRelation;
 
         public static ICollection<EntityCode> FetchEntityCode()
         {
@@ -42,7 +47,7 @@ namespace PGCoverageApi.Utilities
             return _entityCodes;
         }
 
-        public static ICollection<Group> FetchChannels(long channelCount = 5, long startId = 1)
+        public static ICollection<Group> FetchChannels(long channelCount = 5, long startId = 1, ICollection<Group> parentGroupList = null)
         {
             if (_channels == null || !_channels.Any())
             {
@@ -53,7 +58,7 @@ namespace PGCoverageApi.Utilities
         }
 
 
-        public static ICollection<Group> FetchRegions(long regionCount = 15, long startId = 1)
+        public static ICollection<Group> FetchRegions(long regionCount = 15, long startId = 1, ICollection<Group> parentGroupList = null)
         {
 
             if (_regions == null || !_regions.Any())
@@ -61,10 +66,9 @@ namespace PGCoverageApi.Utilities
                 _regions = BuildGroup(_EntityCodeRegion, regionCount, startId);
             }
             return _regions;
-            
         }
 
-        public static ICollection<Group> FetchBranches(long branchCount = 250, long startId = 1)
+        public static ICollection<Group> FetchBranches(long branchCount = 250, long startId = 1, ICollection<Group> parentGroupList = null)
         {
             if (_branches == null || !_branches.Any())
             {
@@ -73,7 +77,7 @@ namespace PGCoverageApi.Utilities
             return _branches;
         }
 
-        public static ICollection<Group> FetchReps(long repCount = 100, long startId = 1)
+        public static ICollection<Group> FetchReps(long repCount = 100, long startId = 1, ICollection<Group> parentGroupList = null)
         {
             if (_reps == null || !_reps.Any())
             {
@@ -103,13 +107,44 @@ namespace PGCoverageApi.Utilities
             return _investor;
         }
 
-        public static void BuildCoverage(long channel = 5, long region = 15, long branch = 200, long rep = 75, long investorGroup = 100, long investor = 25)
+        public static ICollection<GroupRelation> FetchRegionRelations(ICollection<Group> parent, ICollection<Group> child, long startId)
         {
-            BuildGroup(_EntityCodeChannel, channel);
-            BuildGroup(_EntityCodeRegion, region);
-            BuildGroup(_EntityCodeBranch, branch);
-            BuildGroup(_EntityCodeRep, rep);
 
+            if (_regionsRelation == null || !_regionsRelation.Any())
+            {
+                _regionsRelation = BuildGroupRelation(parent, child, startId);
+            }
+            return _regionsRelation;
+        }
+
+        public static ICollection<GroupRelation> FetchBranchRelations(ICollection<Group> parent, ICollection<Group> child, long startId)
+        {
+
+            if (_branchesRelation == null || !_branchesRelation.Any())
+            {
+                _branchesRelation = BuildGroupRelation(parent, child, startId);
+            }
+            return _branchesRelation;
+        }
+
+        public static ICollection<GroupRelation> FetchRepRelations(ICollection<Group> parent, ICollection<Group> child, long startId)
+        {
+
+            if (_repsRelation == null || !_repsRelation.Any())
+            {
+                _repsRelation = BuildGroupRelation(parent, child, startId);
+            }
+            return _repsRelation;
+        }
+
+        public static ICollection<InvestorRelation> FetchInvestorRelations(ICollection<Investor> parent, ICollection<Investor> child, long startId)
+        {
+
+            if (_investorRelation == null || !_investorRelation.Any())
+            {
+                _investorRelation = BuildInvestorRelation(parent, child, startId);
+            }
+            return _investorRelation;
         }
 
         private static void BuildEntityCode()
@@ -170,11 +205,11 @@ namespace PGCoverageApi.Utilities
         {
             var _groups = new List<Group>();
             var entity = _entityCodes.FirstOrDefault<EntityCode>(e => e.EntityCd == entityCode);
-            var _log = new LoggerConfiguration().WriteTo.File(@"C:\Temp\abc1.log").CreateLogger();
-
+            //var _log = new LoggerConfiguration().WriteTo.File(@"C:\Temp\abc1.log").CreateLogger();
+            
             for (long cnt = 1; cnt <= groupCnt; cnt++)
             {
-                _log.Information("FetchGroup - GroupCount - {0}", cnt.ToString());
+                //_log.Information("FetchGroup - GroupCount - {0}", cnt.ToString());
 
                 var group = new Group()
                 {
@@ -187,6 +222,7 @@ namespace PGCoverageApi.Utilities
                     ActiveInd = true,
                     EntityCode = entity
                 };
+                
 
                 _groups.Add(group);
             }
@@ -222,9 +258,69 @@ namespace PGCoverageApi.Utilities
             return _inv;
         }
   
-        private static void BuildGroupRelation(long channelCnt = 10, long startId = 1)
+        private static ICollection<GroupRelation> BuildGroupRelation(ICollection<Group> parentGroupList, ICollection<Group> groupList, long startId)
         {
+            var _groupRelation = new List<GroupRelation>();
+            var _log = new LoggerConfiguration().WriteTo.File(@"C:\Temp\abc2.log").CreateLogger();
+            foreach (Group g in groupList)
+            {
+                _log.Information("FetchGroupRelation - GroupCount - {0}", g.GroupId.ToString());
+                startId++;
 
+                var grpRel = new GroupRelation()
+                {
+                    GroupRelationId = startId,
+                    Group = g,
+                    GroupParent = RandomlyFetchParentGroup(parentGroupList),
+                };
+
+                _groupRelation.Add(grpRel);
+            }
+
+            return _groupRelation;
+        }
+
+        private static ICollection<InvestorRelation> BuildInvestorRelation(ICollection<Investor> parentInvestorList, ICollection<Investor> investorList, long startId)
+        {
+            var _investorRelation = new List<InvestorRelation>();
+
+            var _log = new LoggerConfiguration().WriteTo.File(@"C:\Temp\abc2.log").CreateLogger();
+            foreach (Investor i in investorList)
+            {
+                _log.Information("FetchInvestorRelation - InvestorCount - {0}", i.InvestorId.ToString());
+                startId++;
+
+                var invRel = new InvestorRelation()
+                {
+                    InvestorRelationId = startId,
+                    Investor = i,
+                    InvestorParent = RandomlyFetchInvestorGroup(parentInvestorList),
+                };
+
+                _investorRelation.Add(invRel);
+            }
+
+            return _investorRelation;
+        }
+
+        private static Group RandomlyFetchParentGroup(ICollection<Group> parentGroupList)
+        {
+            if (parentGroupList == null || !parentGroupList.Any())
+                return null;
+
+            int parentId = new Random().Next((int)parentGroupList.Min<Group>(x => x.GroupId), (int)parentGroupList.Max<Group>(x => x.GroupId));
+
+            return parentGroupList.FirstOrDefault<Group>(x => x.GroupId == parentId);
+        }
+
+        private static Investor RandomlyFetchInvestorGroup(ICollection<Investor> parentInvestorList)
+        {
+            if (parentInvestorList == null || !parentInvestorList.Any())
+                return null;
+
+            int parentId = new Random().Next((int)parentInvestorList.Min<Investor>(x => x.InvestorId), (int)parentInvestorList.Max<Investor>(x => x.InvestorId));
+
+            return parentInvestorList.FirstOrDefault<Investor>(x => x.InvestorId == parentId);
         }
 
         private static Random random = new Random();

@@ -49,7 +49,7 @@ namespace PGCoverageApi.Repository
             _context.SaveChanges();
         }
 
-        public void AddBulk(string connectionString, ICollection<InvestorRelation> items, bool storeDataAsJson = false, bool dataInSingleTable = false, long blockSize = 10000)
+        public void AddBulk(string connectionString, ICollection<InvestorRelation> items, long blockSize = 10000)
         {
 
             var group = items.Select((x, index) => new { x, index })
@@ -57,17 +57,15 @@ namespace PGCoverageApi.Repository
 
             IList<string> insertStatements = new List<string>();
 
-            if (!storeDataAsJson)
+            
+            foreach (var block in group)
             {
-                foreach (var block in group)
-                {
-                    insertStatements.Add(FetchInsertStatement(block));
-                }
+                insertStatements.Add(FetchInsertStatement(block));
             }
 
             foreach (string s in insertStatements)
             {
-                logger.Information("inserting entity code: {0}", s);
+                logger.Information("inserting investor relation code: {0}", s);
 
                 using (NpgsqlConnection conn = new NpgsqlConnection(connectionString))
                 {
@@ -96,9 +94,16 @@ namespace PGCoverageApi.Repository
                 sb.Append(i.Investor.InvestorId.ToString());
                 sb.Append(",");
                 sb.Append(i.InvestorParent.InvestorId.ToString());
-                sb.Append(",'");
-                sb.Append(i.InvestorRelationData);
-                sb.Append("'),");
+                if (string.IsNullOrWhiteSpace(i.InvestorRelationData))
+                {
+                    sb.Append(", NULL),");
+                }
+                else
+                {
+                    sb.Append(",'");
+                    sb.Append(i.InvestorRelationData);
+                    sb.Append("'),");
+                }
                 fix.Append(sb.ToString());
             }
 

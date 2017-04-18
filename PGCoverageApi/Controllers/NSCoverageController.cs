@@ -53,6 +53,11 @@ namespace PGCoverageApi.Controllers
 
             var investor = NSCoverageDataSetup.FetchInvestor(investorCount, investorGroup.Max<Investor>(i => i.InvestorId));
 
+            var regionRelation = NSCoverageDataSetup.FetchRegionRelations(channels, regions, 0);
+            var branchRelation = NSCoverageDataSetup.FetchBranchRelations(regions, branches, regionRelation.Max<GroupRelation>(i => i.GroupRelationId));
+            var repRelation = NSCoverageDataSetup.FetchRepRelations(branches, reps, branchRelation.Max<GroupRelation>(i => i.GroupRelationId));
+
+            var investorRelation = NSCoverageDataSetup.FetchInvestorRelations(investorGroup, investor, 0);
             var startTime = DateTime.UtcNow;
 
             //Channel
@@ -64,16 +69,19 @@ namespace PGCoverageApi.Controllers
             ////Region
             var startTimeRegion = DateTime.UtcNow;
             _groupRepository.AddBulk(connectionString, regions, batchSize);
+            _groupRelationRepository.AddBulk(connectionString, regionRelation, batchSize);
             var endTimeRegion = DateTime.UtcNow;
 
             ////Branch
             var startTimeBranch= DateTime.UtcNow;
             _groupRepository.AddBulk(connectionString, branches, batchSize);
+            _groupRelationRepository.AddBulk(connectionString, branchRelation, batchSize);
             var endTimeBranch = DateTime.UtcNow;
 
             ////Rep
             var startTimeRep = DateTime.UtcNow;
             _groupRepository.AddBulk(connectionString, reps, batchSize);
+            _groupRelationRepository.AddBulk(connectionString, repRelation, batchSize);
             var endTimeRep = DateTime.UtcNow;
 
             ////InvestorGroup
@@ -85,6 +93,7 @@ namespace PGCoverageApi.Controllers
             ////Rep
             var startTimeInvestor = DateTime.UtcNow;
             _investorRepository.AddBulk(connectionString, investor, batchSize);
+            _investorRelationRepository.AddBulk(connectionString, investorRelation, batchSize);
             var endTimeInvestor = DateTime.UtcNow;
 
 

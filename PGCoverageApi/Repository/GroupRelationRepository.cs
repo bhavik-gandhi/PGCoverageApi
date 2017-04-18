@@ -5,6 +5,7 @@ using PGCoverageApi.DataContext;
 using PGCoverageApi.Models;
 using Npgsql;
 using Serilog;
+using System;
 
 namespace PGCoverageApi.Repository
 {
@@ -49,37 +50,42 @@ namespace PGCoverageApi.Repository
             _context.SaveChanges();
         }
 
-        public void AddBulk(string connectionString, ICollection<GroupRelation> items, bool storeDataAsJson = false, bool dataInSingleTable = false, int blockSize = 10000)
+        public void AddBulk(string connectionString, ICollection<GroupRelation> items, long blockSize = 10000)
         {
 
             var group = items.Select((x, index) => new { x, index })
                                .GroupBy(x => x.index / blockSize, y => y.x);
 
-            IList<string> insertStatements = new List<string>();
-
-            if (!storeDataAsJson)
+            try
             {
+                IList<string> insertStatements = new List<string>();
+
                 foreach (var block in group)
                 {
                     insertStatements.Add(FetchInsertStatement(block));
                 }
-            }
 
-            foreach (string s in insertStatements)
-            {
-                logger.Information("inserting entity code: {0}", s);
 
-                using (NpgsqlConnection conn = new NpgsqlConnection(connectionString))
+                foreach (string s in insertStatements)
                 {
-                    conn.Open();
+                    logger.Information("inserting group relation: {0}", s);
 
-                    using (NpgsqlCommand cmd = new NpgsqlCommand(s, conn))
+                    using (NpgsqlConnection conn = new NpgsqlConnection(connectionString))
                     {
-                        cmd.ExecuteNonQuery();
-                    }
-                    conn.Close();
-                }
+                        conn.Open();
 
+                        using (NpgsqlCommand cmd = new NpgsqlCommand(s, conn))
+                        {
+                            cmd.ExecuteNonQuery();
+                        }
+                        conn.Close();
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Information(ex.ToString());
             }
         }
 
@@ -96,9 +102,16 @@ namespace PGCoverageApi.Repository
                 sb.Append(i.Group.GroupId.ToString());
                 sb.Append(",");
                 sb.Append(i.GroupParent.GroupId.ToString());
-                sb.Append(",'");
-                sb.Append(i.GroupRelationData);
-                sb.Append("'),");
+                if (string.IsNullOrWhiteSpace(i.GroupRelationData))
+                {
+                    sb.Append(", NULL),");
+                }
+                else
+                {
+                    sb.Append(",'");
+                    sb.Append(i.GroupRelationData);
+                    sb.Append("'),");
+                }
                 fix.Append(sb.ToString());
             }
 

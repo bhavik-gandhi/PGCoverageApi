@@ -67,7 +67,7 @@ namespace PGCoverageApi.Repository
 
                 foreach (string s in insertStatements)
                 {
-                    logger.Information("inserting group: {0}", s);
+                    //logger.Information("inserting group: {0}", s);
 
                     using (NpgsqlConnection conn = new NpgsqlConnection(connectionString))
                     {

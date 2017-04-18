@@ -14,7 +14,7 @@ namespace PGCoverageApi.Repository
         void Remove(long key);
         void Update(GroupRelation item);
 
-        void AddBulk(string connectionString, ICollection<GroupRelation> items, bool storeDataAsJson, bool dataInSingleTable, int blockSize = 10000);
+        void AddBulk(string connectionString, ICollection<GroupRelation> items, long blockSize = 10000);
 
     }
 }
