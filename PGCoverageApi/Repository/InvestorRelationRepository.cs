@@ -92,8 +92,15 @@ namespace PGCoverageApi.Repository
                 sb.Append(i.InvestorRelationId.ToString());
                 sb.Append(",");
                 sb.Append(i.Investor.InvestorId.ToString());
-                sb.Append(",");
-                sb.Append(i.InvestorParent.InvestorId.ToString());
+                if (i.InvestorParent == null)
+                {
+                    sb.Append(",NULL");
+                }
+                else
+                {
+                    sb.Append(",");
+                    sb.Append(i.InvestorParent.InvestorId.ToString());
+                }
                 if (string.IsNullOrWhiteSpace(i.InvestorRelationData))
                 {
                     sb.Append(", NULL),");

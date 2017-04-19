@@ -58,6 +58,7 @@ namespace PGCoverageApi.Controllers
             var repRelation = NSCoverageDataSetup.FetchRepRelations(branches, reps, branchRelation.Max<GroupRelation>(i => i.GroupRelationId));
 
             var investorRelation = NSCoverageDataSetup.FetchInvestorRelations(investorGroup, investor, 0);
+            var investorGroupRelation  = NSCoverageDataSetup.FetchInvestorGroupRelations(investorGroup, investorRelation, investorRelation.Max<InvestorRelation>(i => i.InvestorRelationId));
             var startTime = DateTime.UtcNow;
 
             //Channel
@@ -87,6 +88,7 @@ namespace PGCoverageApi.Controllers
             ////InvestorGroup
             var startTimeInvestorGroup = DateTime.UtcNow;
             _investorRepository.AddBulk(connectionString, investorGroup, batchSize);
+            _investorRelationRepository.AddBulk(connectionString, investorGroupRelation, batchSize);
             var endTimeInvestorGroup = DateTime.UtcNow;
 
 

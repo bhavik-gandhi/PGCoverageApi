@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Text;
 using PGCoverageApi.Models;
 using Serilog;
 using Microsoft.Extensions.Logging;
@@ -36,6 +36,7 @@ namespace PGCoverageApi.Utilities
         private static ICollection<Investor> _investor;
 
         private static ICollection<InvestorRelation> _investorRelation;
+        private static ICollection<InvestorRelation> _investorGroupRelation;
 
         public static ICollection<EntityCode> FetchEntityCode()
         {
@@ -147,6 +148,18 @@ namespace PGCoverageApi.Utilities
             return _investorRelation;
         }
 
+        public static ICollection<InvestorRelation> FetchInvestorGroupRelations(ICollection<Investor> parent, ICollection<InvestorRelation> invRelation, long startId)
+        {
+
+            if (_investorGroupRelation == null || !_investorGroupRelation.Any())
+            {
+                _investorGroupRelation = BuildInvestorGroupRelation(parent, invRelation, startId);
+            }
+            return _investorGroupRelation;
+        }
+
+        
+
         private static void BuildEntityCode()
         {
             _entityCodes = new List<EntityCode>();
@@ -205,7 +218,7 @@ namespace PGCoverageApi.Utilities
         {
             var _groups = new List<Group>();
             var entity = _entityCodes.FirstOrDefault<EntityCode>(e => e.EntityCd == entityCode);
-            //var _log = new LoggerConfiguration().WriteTo.File(@"C:\Temp\abc1.log").CreateLogger();
+            //var _log = new LoggerConfiguration().WriteTo.File(@"C:\Temp\logs\abc1.log").CreateLogger();
             
             for (long cnt = 1; cnt <= groupCnt; cnt++)
             {
@@ -234,11 +247,11 @@ namespace PGCoverageApi.Utilities
         {
             var _inv = new List<Investor>();
             var entity = _entityCodes.FirstOrDefault<EntityCode>(e => e.EntityCd == entityCode);
-            var _log = new LoggerConfiguration().WriteTo.File(@"C:\Temp\abc1.log").CreateLogger();
+            //var _log = new LoggerConfiguration().WriteTo.File(@"C:\Temp\logs\abc1.log").CreateLogger();
 
             for (long cnt = 1; cnt <= groupCnt; cnt++)
             {
-                _log.Information("FetchGroup - GroupCount - {0}", cnt.ToString());
+              //  _log.Information("FetchGroup - GroupCount - {0}", cnt.ToString());
 
                 var investor = new Investor()
                 {
@@ -261,10 +274,10 @@ namespace PGCoverageApi.Utilities
         private static ICollection<GroupRelation> BuildGroupRelation(ICollection<Group> parentGroupList, ICollection<Group> groupList, long startId)
         {
             var _groupRelation = new List<GroupRelation>();
-            var _log = new LoggerConfiguration().WriteTo.File(@"C:\Temp\abc2.log").CreateLogger();
+            //var _log = new LoggerConfiguration().WriteTo.File(@"C:\Temp\logs\abc2.log").CreateLogger();
             foreach (Group g in groupList)
             {
-                _log.Information("FetchGroupRelation - GroupCount - {0}", g.GroupId.ToString());
+              //  _log.Information("FetchGroupRelation - GroupCount - {0}", g.GroupId.ToString());
                 startId++;
 
                 var grpRel = new GroupRelation()
@@ -284,10 +297,10 @@ namespace PGCoverageApi.Utilities
         {
             var _investorRelation = new List<InvestorRelation>();
 
-            var _log = new LoggerConfiguration().WriteTo.File(@"C:\Temp\abc2.log").CreateLogger();
+            //var _log = new LoggerConfiguration().WriteTo.File(@"C:\Temp\logs\abc2.log").CreateLogger();
             foreach (Investor i in investorList)
             {
-                _log.Information("FetchInvestorRelation - InvestorCount - {0}", i.InvestorId.ToString());
+              //  _log.Information("FetchInvestorRelation - InvestorCount - {0}", i.InvestorId.ToString());
                 startId++;
 
                 var invRel = new InvestorRelation()
@@ -301,6 +314,59 @@ namespace PGCoverageApi.Utilities
             }
 
             return _investorRelation;
+        }
+
+        private static ICollection<InvestorRelation> BuildInvestorGroupRelation(ICollection<Investor> invGroups, ICollection<InvestorRelation> invRelation, long startId)
+        {
+            var _investorRelation = new List<InvestorRelation>();
+
+            //var _log = new LoggerConfiguration().WriteTo.File(@"C:\Temp\logs\abc2.log").CreateLogger();
+            foreach (Investor i in invGroups)
+            {
+                //_log.Information("FetchInvestorRelation - InvestorCount - {0}", i.InvestorId.ToString());
+                startId++;
+
+                var invRel = new InvestorRelation()
+                {
+                    InvestorRelationId = startId,
+                    Investor = i,
+                    InvestorRelationData = GetInvestorGroupRelationData(i.InvestorId, invRelation),
+                };
+
+                _investorRelation.Add(invRel);
+            }
+
+            return _investorRelation;
+        }
+
+        private static string GetInvestorGroupRelationData(long invGroupId, ICollection<InvestorRelation> invRelation)
+        {
+            string invRelationData = string.Empty;
+
+            var _log = new LoggerConfiguration().WriteTo.File(@"C:\Temp\logs\abc3.log").CreateLogger();
+
+            //_log.Information("here -GetInvestorGroupRelationData - {0}", invGroupId);
+
+            var invList = invRelation.Where<InvestorRelation>(x => x.InvestorParent.InvestorId == invGroupId).Select< InvestorRelation, Investor>(x => x.Investor);
+
+            //_log.Information("GetInvestorGroupRelationData - InvestorCount - {0}", invList.LongCount().ToString());
+
+            if (invList == null || !invList.Any())
+                return string.Empty;
+
+
+            StringBuilder sb = new StringBuilder();
+            sb.Append("{\"investors\":\"[");
+
+            foreach (Investor inv in invList)
+            {
+                sb.Append(inv.InvestorId.ToString());
+                sb.Append(",");
+            }
+            sb.Remove(sb.Length - 1, 1);
+            sb.Append("]\"}");
+            invRelationData = sb.ToString();
+            return invRelationData;
         }
 
         private static Group RandomlyFetchParentGroup(ICollection<Group> parentGroupList)
