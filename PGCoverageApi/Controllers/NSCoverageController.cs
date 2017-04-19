@@ -5,6 +5,7 @@ using PGCoverageApi.Utilities;
 using Serilog;
 using PGCoverageApi.Models;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace PGCoverageApi.Controllers
 {
@@ -35,6 +36,8 @@ namespace PGCoverageApi.Controllers
 
             NSCoverageDataSetup.FetchEntityCode();
 
+           
+
             var channels = NSCoverageDataSetup.FetchChannels(channelCount, 0);
 
             _log.Information("channel_maxid is:" + channels.Max<Group>(i => i.GroupId));
@@ -53,9 +56,22 @@ namespace PGCoverageApi.Controllers
 
             var investor = NSCoverageDataSetup.FetchInvestor(investorCount, investorGroup.Max<Investor>(i => i.InvestorId));
 
-            var regionRelation = NSCoverageDataSetup.FetchRegionRelations(channels, regions, 0);
-            var branchRelation = NSCoverageDataSetup.FetchBranchRelations(regions, branches, regionRelation.Max<GroupRelation>(i => i.GroupRelationId));
-            var repRelation = NSCoverageDataSetup.FetchRepRelations(branches, reps, branchRelation.Max<GroupRelation>(i => i.GroupRelationId));
+           /* var ansectors = new Dictionary<string, ICollection<Group>>()
+            {
+                {NSCoverageDataSetup._EntityCodeChannel, channels },
+                {NSCoverageDataSetup._EntityCodeRegion, regions},
+                {NSCoverageDataSetup._EntityCodeBranch, branches },
+            };*/
+
+            var ansectors = new List<Group>();
+            ansectors.AddRange(channels);
+            ansectors.AddRange(regions);
+            ansectors.AddRange(branches);
+
+
+            var regionRelation = NSCoverageDataSetup.FetchRegionRelations(channels, regions, 0, NSCoverageDataSetup._EntityCodeRegion, ansectors);
+            var branchRelation = NSCoverageDataSetup.FetchBranchRelations(regions, branches, regionRelation.Max<GroupRelation>(i => i.GroupRelationId), NSCoverageDataSetup._EntityCodeBranch, ansectors);
+            var repRelation = NSCoverageDataSetup.FetchRepRelations(branches, reps, branchRelation.Max<GroupRelation>(i => i.GroupRelationId), NSCoverageDataSetup._EntityCodeRep, ansectors);
 
             var investorRelation = NSCoverageDataSetup.FetchInvestorRelations(investorGroup, investor, 0);
             var investorGroupRelation  = NSCoverageDataSetup.FetchInvestorGroupRelations(investorGroup, investorRelation, investorRelation.Max<InvestorRelation>(i => i.InvestorRelationId));

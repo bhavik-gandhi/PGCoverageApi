@@ -14,15 +14,15 @@ namespace PGCoverageApi.Utilities
         private static readonly int _companyId = 101;
         private static ICollection<EntityCode> _entityCodes;
 
-        private static string _EntityCodeChannel = "CH";
-        private static string _EntityCodeRegion = "RG";
-        private static string _EntityCodeBranch = "BR";
-        private static string _EntityCodeRep = "R";
-        private static string _EntityCodeInvestorGroup = "InvGrp";
-        private static string _EntityCodeInvestor = "Inv";
+        public static string _EntityCodeChannel = "CH";
+        public static string _EntityCodeRegion = "RG";
+        public static string _EntityCodeBranch = "BR";
+        public static string _EntityCodeRep = "R";
+        public static string _EntityCodeInvestorGroup = "InvGrp";
+        public static string _EntityCodeInvestor = "Inv";
 
-        private static string _entityCodeTypeGroup = "Group";
-        private static string _entityCodeTypeInvestor = "Investor";
+        public static string _entityCodeTypeGroup = "Group";
+        public static string _entityCodeTypeInvestor = "Investor";
 
         private static ICollection<Group> _channels;
         private static ICollection<Group> _regions;
@@ -108,32 +108,32 @@ namespace PGCoverageApi.Utilities
             return _investor;
         }
 
-        public static ICollection<GroupRelation> FetchRegionRelations(ICollection<Group> parent, ICollection<Group> child, long startId)
+        public static ICollection<GroupRelation> FetchRegionRelations(ICollection<Group> parent, ICollection<Group> child, long startId, string currentEntityCodeType, ICollection<Group> ansectors)
         {
 
             if (_regionsRelation == null || !_regionsRelation.Any())
             {
-                _regionsRelation = BuildGroupRelation(parent, child, startId);
+                _regionsRelation = BuildGroupRelation(parent, child, startId, currentEntityCodeType, ansectors);
             }
             return _regionsRelation;
         }
 
-        public static ICollection<GroupRelation> FetchBranchRelations(ICollection<Group> parent, ICollection<Group> child, long startId)
+        public static ICollection<GroupRelation> FetchBranchRelations(ICollection<Group> parent, ICollection<Group> child, long startId, string currentEntityCodeType, ICollection<Group> ansectors)
         {
 
             if (_branchesRelation == null || !_branchesRelation.Any())
             {
-                _branchesRelation = BuildGroupRelation(parent, child, startId);
+                _branchesRelation = BuildGroupRelation(parent, child, startId, currentEntityCodeType, ansectors);
             }
             return _branchesRelation;
         }
 
-        public static ICollection<GroupRelation> FetchRepRelations(ICollection<Group> parent, ICollection<Group> child, long startId)
+        public static ICollection<GroupRelation> FetchRepRelations(ICollection<Group> parent, ICollection<Group> child, long startId, string currentEntityCodeType, ICollection<Group> ansectors)
         {
 
             if (_repsRelation == null || !_repsRelation.Any())
             {
-                _repsRelation = BuildGroupRelation(parent, child, startId);
+                _repsRelation = BuildGroupRelation(parent, child, startId, currentEntityCodeType, ansectors);
             }
             return _repsRelation;
         }
@@ -271,7 +271,7 @@ namespace PGCoverageApi.Utilities
             return _inv;
         }
   
-        private static ICollection<GroupRelation> BuildGroupRelation(ICollection<Group> parentGroupList, ICollection<Group> groupList, long startId)
+        private static ICollection<GroupRelation> BuildGroupRelation(ICollection<Group> parentGroupList, ICollection<Group> groupList, long startId, string currentEntityCodeType, ICollection<Group> ansectors)
         {
             var _groupRelation = new List<GroupRelation>();
             //var _log = new LoggerConfiguration().WriteTo.File(@"C:\Temp\logs\abc2.log").CreateLogger();
@@ -285,6 +285,7 @@ namespace PGCoverageApi.Utilities
                     GroupRelationId = startId,
                     Group = g,
                     GroupParent = RandomlyFetchParentGroup(parentGroupList),
+                    GroupRelationData = GetGroupRelationData(currentEntityCodeType, g.GroupId, ansectors)
                 };
 
                 _groupRelation.Add(grpRel);
@@ -367,6 +368,67 @@ namespace PGCoverageApi.Utilities
             return sb.ToString();
         }
 
+        private static string GetGroupRelationData(string currentEntityCodeType, long groupId, ICollection<Group> ansectors)
+        {
+            var _log = new LoggerConfiguration().WriteTo.File(@"C:\Temp\logs\abc3.log").CreateLogger();
+
+
+            StringBuilder sb = new StringBuilder();
+            string ancestorList = GetAncestorListFortheGroup(groupId, ansectors);
+            string investorGroupList = GetInvestorGroupListFortheGroup();
+            string userList = GetUserListFortheGroup();
+
+            if (string.IsNullOrEmpty(ancestorList) && string.IsNullOrEmpty(investorGroupList) && string.IsNullOrEmpty(userList))
+                return string.Empty;
+
+            sb.Append("{");
+
+            if (!string.IsNullOrEmpty(ancestorList))
+            {
+                sb.Append("\"ancestors\":\"[");
+                sb.Append(ancestorList);
+                sb.Append("]\",");
+            }
+
+            if (!string.IsNullOrEmpty(investorGroupList))
+            {
+                sb.Append("\"investorgroups\":\"[");
+                sb.Append(investorGroupList);
+                sb.Append("]\",");
+            }
+
+            if (!string.IsNullOrEmpty(userList))
+            {
+                sb.Append("\"users\":\"[");
+                sb.Append(userList);
+                sb.Append("]\",");
+            }
+
+            sb.Append("}");
+
+            return sb.ToString();
+        }
+
+        private static string GetAncestorListFortheGroup(long groupId, ICollection<Group> ansectors)
+        {
+            string list = string.Empty;
+
+            return list;
+        }
+
+        private static string GetInvestorGroupListFortheGroup()
+        {
+            string list = string.Empty;
+
+            return list;
+        }
+
+        private static string GetUserListFortheGroup()
+        {
+            string list = string.Empty;
+
+            return list;
+        }
         private static Group RandomlyFetchParentGroup(ICollection<Group> parentGroupList)
         {
             if (parentGroupList == null || !parentGroupList.Any())
@@ -387,20 +449,18 @@ namespace PGCoverageApi.Utilities
             return parentInvestorList.FirstOrDefault<Investor>(x => x.InvestorId == parentId);
         }
 
-        private static Random random = new Random();
         private static string RandomString(int length, bool isSpaceAllowed)
         {
             string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" + (isSpaceAllowed ? " " : string.Empty);
             return new string(Enumerable.Repeat(chars, length)
-              .Select(s => s[random.Next(s.Length)]).ToArray());
+              .Select(s => s[new Random().Next(s.Length)]).ToArray());
         }
 
-        private static Random randomNumber = new Random();
         private static string RandomNumber(int length)
         {
             const string chars = "0123456789";
             return new string(Enumerable.Repeat(chars, length)
-              .Select(s => s[randomNumber.Next(s.Length)]).ToArray());
+              .Select(s => s[new Random().Next(s.Length)]).ToArray());
         }
     }
 }
