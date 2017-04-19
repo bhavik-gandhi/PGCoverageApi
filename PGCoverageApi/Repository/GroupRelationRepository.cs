@@ -100,8 +100,15 @@ namespace PGCoverageApi.Repository
                 sb.Append(i.GroupRelationId.ToString());
                 sb.Append(",");
                 sb.Append(i.Group.GroupId.ToString());
-                sb.Append(",");
-                sb.Append(i.GroupParent.GroupId.ToString());
+                if (i.GroupParent == null)
+                {
+                    sb.Append(",NULL");
+                }
+                else
+                {
+                    sb.Append(",");
+                    sb.Append(i.GroupParent.GroupId.ToString());
+                }
                 if (string.IsNullOrWhiteSpace(i.GroupRelationData))
                 {
                     sb.Append(", NULL),");

@@ -56,22 +56,25 @@ namespace PGCoverageApi.Controllers
 
             var investor = NSCoverageDataSetup.FetchInvestor(investorCount, investorGroup.Max<Investor>(i => i.InvestorId));
 
-           /* var ansectors = new Dictionary<string, ICollection<Group>>()
-            {
-                {NSCoverageDataSetup._EntityCodeChannel, channels },
-                {NSCoverageDataSetup._EntityCodeRegion, regions},
-                {NSCoverageDataSetup._EntityCodeBranch, branches },
-            };*/
+            /* var ansectors = new Dictionary<string, ICollection<Group>>()
+             {
+                 {NSCoverageDataSetup._EntityCodeChannel, channels },
+                 {NSCoverageDataSetup._EntityCodeRegion, regions},
+                 {NSCoverageDataSetup._EntityCodeBranch, branches },
+             };*/
 
-            var ansectors = new List<Group>();
-            ansectors.AddRange(channels);
-            ansectors.AddRange(regions);
-            ansectors.AddRange(branches);
+            var channelRelation = NSCoverageDataSetup.FetchChannelRelations(null, channels, 0);
+            var regionRelation = NSCoverageDataSetup.FetchRegionRelations(channels, regions, channelRelation.Max<GroupRelation>(i => i.GroupRelationId));
+            var branchRelation = NSCoverageDataSetup.FetchBranchRelations(regions, branches, regionRelation.Max<GroupRelation>(i => i.GroupRelationId));
+            var repRelation = NSCoverageDataSetup.FetchRepRelations(branches, reps, branchRelation.Max<GroupRelation>(i => i.GroupRelationId));
 
+            var ancestors = new List<GroupRelation>();
+            ancestors.AddRange(channelRelation);
+            ancestors.AddRange(regionRelation);
+            ancestors.AddRange(branchRelation);
+            ancestors.AddRange(repRelation);
 
-            var regionRelation = NSCoverageDataSetup.FetchRegionRelations(channels, regions, 0, NSCoverageDataSetup._EntityCodeRegion, ansectors);
-            var branchRelation = NSCoverageDataSetup.FetchBranchRelations(regions, branches, regionRelation.Max<GroupRelation>(i => i.GroupRelationId), NSCoverageDataSetup._EntityCodeBranch, ansectors);
-            var repRelation = NSCoverageDataSetup.FetchRepRelations(branches, reps, branchRelation.Max<GroupRelation>(i => i.GroupRelationId), NSCoverageDataSetup._EntityCodeRep, ansectors);
+            NSCoverageDataSetup.UpdateGroupRelationDataForRep(ancestors);
 
             var investorRelation = NSCoverageDataSetup.FetchInvestorRelations(investorGroup, investor, 0);
             var investorGroupRelation  = NSCoverageDataSetup.FetchInvestorGroupRelations(investorGroup, investorRelation, investorRelation.Max<InvestorRelation>(i => i.InvestorRelationId));
@@ -80,7 +83,7 @@ namespace PGCoverageApi.Controllers
             //Channel
             var startTimeChannel = DateTime.UtcNow;
             _groupRepository.AddBulk(connectionString, channels, batchSize);
-
+            _groupRelationRepository.AddBulk(connectionString, channelRelation, batchSize);
             var endTimeChannel = DateTime.UtcNow;
 
             ////Region
