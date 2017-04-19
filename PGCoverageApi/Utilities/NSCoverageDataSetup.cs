@@ -341,14 +341,12 @@ namespace PGCoverageApi.Utilities
 
         private static string GetInvestorGroupRelationData(long invGroupId, ICollection<InvestorRelation> invRelation)
         {
-            string invRelationData = string.Empty;
-
             var _log = new LoggerConfiguration().WriteTo.File(@"C:\Temp\logs\abc3.log").CreateLogger();
 
             //_log.Information("here -GetInvestorGroupRelationData - {0}", invGroupId);
 
-            var invList = invRelation.Where<InvestorRelation>(x => x.InvestorParent.InvestorId == invGroupId).Select< InvestorRelation, Investor>(x => x.Investor);
-
+            //var invList = invRelation.Where<InvestorRelation>(x => x.InvestorParent.InvestorId == invGroupId).Select< InvestorRelation, Investor>(x => x.Investor);
+            var invList = invRelation.Where<InvestorRelation>(x => x.InvestorParent.InvestorId == invGroupId).Select<InvestorRelation, long>(x => x.Investor.InvestorId);
             //_log.Information("GetInvestorGroupRelationData - InvestorCount - {0}", invList.LongCount().ToString());
 
             if (invList == null || !invList.Any())
@@ -358,15 +356,15 @@ namespace PGCoverageApi.Utilities
             StringBuilder sb = new StringBuilder();
             sb.Append("{\"investors\":\"[");
 
-            foreach (Investor inv in invList)
+            foreach (long inv in invList)
             {
-                sb.Append(inv.InvestorId.ToString());
+                sb.Append(inv.ToString());
                 sb.Append(",");
             }
             sb.Remove(sb.Length - 1, 1);
             sb.Append("]\"}");
-            invRelationData = sb.ToString();
-            return invRelationData;
+            
+            return sb.ToString();
         }
 
         private static Group RandomlyFetchParentGroup(ICollection<Group> parentGroupList)
